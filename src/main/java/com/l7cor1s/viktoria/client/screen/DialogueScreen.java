@@ -4,6 +4,7 @@ import com.l7cor1s.viktoria.dialogue.DialogueChoice;
 import com.l7cor1s.viktoria.dialogue.DialogueNode;
 import com.l7cor1s.viktoria.dialogue.DialogueTrees;
 import com.l7cor1s.viktoria.network.DialogueChoicePayload;
+import com.l7cor1s.viktoria.relationship.MoodType;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -46,10 +47,11 @@ public class DialogueScreen extends Screen {
         if (node == null) {
             return;
         }
+        List<DialogueChoice> visible = node.visibleChoices(affinity, MoodType.byName(mood));
         int panelWidth = Math.min(360, this.width - 40);
         int x = (this.width - panelWidth) / 2;
-        int y = this.height - 28 - node.choices().size() * 24;
-        for (DialogueChoice choice : node.choices()) {
+        int y = this.height - 28 - visible.size() * 24;
+        for (DialogueChoice choice : visible) {
             Button button = Button.builder(Component.translatable(choice.langKey()), b -> select(choice))
                     .bounds(x, y, panelWidth, 20)
                     .build();
@@ -61,11 +63,11 @@ public class DialogueScreen extends Screen {
 
     private void select(DialogueChoice choice) {
         PacketDistributor.sendToServer(new DialogueChoicePayload(entityId, nodeId, choice.id()));
-        if ("close".equals(choice.action()) || "intimate_pose".equals(choice.action())) {
+        if ("close".equals(choice.action()) || "intimate_pose".equals(choice.action())
+                || "intimate_close".equals(choice.action())) {
             onClose();
             return;
         }
-        // Optimistic local navigation; server will re-open authoritative node.
         if (choice.nextNode() != null && !"close".equals(choice.action())) {
             this.nodeId = choice.nextNode();
             this.node = DialogueTrees.get(characterId, nodeId).orElse(null);
@@ -94,7 +96,8 @@ public class DialogueScreen extends Screen {
                 panelLeft + panelWidth / 2, panelTop - 8, 0xB8A294, false);
 
         if (node != null) {
-            List<FormattedCharSequence> lines = this.font.split(Component.translatable(node.textKey()), panelWidth - 8);
+            String textKey = node.resolveTextKey(MoodType.byName(mood));
+            List<FormattedCharSequence> lines = this.font.split(Component.translatable(textKey), panelWidth - 8);
             int textY = panelTop + 10;
             for (FormattedCharSequence line : lines) {
                 graphics.drawString(this.font, line, panelLeft, textY, 0xFFF4EEE6, false);

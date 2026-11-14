@@ -7,6 +7,7 @@ NeoForge **1.21.1** single-player companion mod with an extensible character fra
 - Minecraft 1.21.1
 - NeoForge 21.1.x
 - [GeckoLib](https://modrinth.com/mod/geckolib) 4.7+ for 1.21.1 NeoForge
+- Optional: [MCA Reborn](https://modrinth.com/mod/minecraft-comes-alive-reborn) for town appearance
 
 ## Build
 
@@ -18,33 +19,34 @@ Jar: `build/libs/viktoria-0.1.0.jar`
 
 ## Play / test (SP)
 
-1. Install NeoForge 1.21.1 + GeckoLib + this mod.
-2. In a world, run:
+1. Install NeoForge 1.21.1 + GeckoLib + this mod (+ MCA optional).
+2. Commands:
    - `/viktoria summon` or `/vika spawn` — spawn Виктория
-   - Right-click her — Russian dialogue GUI
-   - Hold an item and right-click — gift (flowers/cake loved; rotten flesh hated)
-   - Dialogue **Иди / останься** or `/viktoria follow` — follow toggle
-   - `/viktoria affinity <0-100>` — set relationship for testing intimate/home gates
-   - `/viktoria home` — claim home at your position
-   - `/viktoria status` — affinity / mood
+   - Right-click — Russian dialogue GUI (mood-aware lines + gated choices)
+   - Hold flower/cake and right-click — gift (+ flower quest progress)
+   - Dialogue follow toggle or `/viktoria follow`
+   - `/viktoria affinity <0-100>` — test intimate/home gates
+   - `/viktoria home` / `/viktoria status`
+3. Quests (real objectives):
+   - Flowers: gift 3 flowers
+   - Home: claim home via dialogue (affinity ≥20 to unlock quest)
+   - Evening walk: follow at night (~400 ticks)
+4. World: rare dark-oak cottage feature; MCA towns spawn her via soft-dep hooks when MCA is installed.
 
-## Features (slice)
+## Features
 
 | System | Status |
 |--------|--------|
-| Character registry (`CompanionCharacter`) | Working |
-| Viktoria entity + GeckoLib model/anims | Working (stylized placeholder toward reference) |
-| Summon commands | Working |
-| Dialogue GUI (RU + EN keys) | Working |
-| Affinity / mood persistence (player attachment) | Working |
-| Gifts / follow / reactions | Working |
-| Home claim + live-together | Working (hooks) |
-| Quests | Working (simple chain auto-progress) |
-| Intimate gate (tier + consent) | Working (pose hook) |
-| Village chance spawn | Working |
-| MCA town spawn | Stub (optional soft-dep) |
-| Custom house structure | Stub / future |
+| Character registry | Working |
+| JSON dialogue loader + RU trees | Working |
+| Affinity / mood reactions | Working |
+| Gifts / follow | Working |
+| Real quest objectives | Working |
+| House worldgen feature | Working |
+| MCA town soft-dep | Working (reflection; graceful without MCA) |
+| Intimate poses (gated) | Working (`intimate` / `intimate_close`) |
+| GeckoLib model toward reference | Improved placeholder (not final Blockbench art) |
 
 ## Extending
 
-Register another `CompanionCharacter` in `CharacterRegistry` during common setup; reuse `CompanionEntity` with a different `characterId`, dialogue tree map, gift profile, and geo assets.
+Register another `CompanionCharacter`; add `data/<ns>/dialogue/<id>.json` overlays; reuse `CompanionEntity` with a new `characterId`.

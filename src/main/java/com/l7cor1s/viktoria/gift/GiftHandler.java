@@ -2,6 +2,7 @@ package com.l7cor1s.viktoria.gift;
 
 import com.l7cor1s.viktoria.character.CompanionCharacter;
 import com.l7cor1s.viktoria.entity.CompanionEntity;
+import com.l7cor1s.viktoria.quest.QuestProgress;
 import com.l7cor1s.viktoria.relationship.CompanionState;
 import com.l7cor1s.viktoria.relationship.ModAttachments;
 import net.minecraft.network.chat.Component;
@@ -28,6 +29,8 @@ public final class GiftHandler {
         character.reactToGift(stack, state.affinity()).ifPresent(key ->
                 player.displayClientMessage(Component.translatable(key, character.displayName(),
                         state.tier().label(), state.mood().label()), false));
+
+        QuestProgress.onGift(player, companion, state, stack);
 
         if (!player.getAbilities().instabuild) {
             stack.shrink(1);

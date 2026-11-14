@@ -4,6 +4,8 @@ public record QuestDefinition(
         String id,
         String langKey,
         int minAffinity,
-        int rewardAffinity
+        int rewardAffinity,
+        QuestObjective objective,
+        int targetCount
 ) {
 }

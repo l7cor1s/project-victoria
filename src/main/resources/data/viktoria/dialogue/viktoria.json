@@ -1,0 +1,154 @@
+{
+  "character": "viktoria",
+  "nodes": {
+    "greeting": {
+      "text": "viktoria.dialogue.greeting",
+      "mood_text": {
+        "lonely": "viktoria.dialogue.greeting_lonely",
+        "irritation": "viktoria.dialogue.greeting_irritated",
+        "joy": "viktoria.dialogue.greeting_joy",
+        "affection": "viktoria.dialogue.greeting_affection",
+        "jealousy": "viktoria.dialogue.greeting_jealousy"
+      },
+      "choices": [
+        {"id": "chat", "lang": "viktoria.choice.chat", "next": "smalltalk", "affinity": 2, "mood": "affection"},
+        {"id": "comfort", "lang": "viktoria.choice.comfort", "next": "comfort", "affinity": 4, "mood": "affection", "required_moods": ["lonely", "irritation"]},
+        {"id": "flirt", "lang": "viktoria.choice.flirt", "next": "flirt", "affinity": 3, "mood": "affection", "min_affinity": 35},
+        {"id": "gift_hint", "lang": "viktoria.choice.gift_hint", "next": "gift_hint"},
+        {"id": "follow", "lang": "viktoria.choice.follow", "next": "follow_confirm", "affinity": 1, "mood": "joy", "action": "toggle_follow"},
+        {"id": "status", "lang": "viktoria.choice.status", "next": "status", "action": "show_status"},
+        {"id": "home", "lang": "viktoria.choice.home", "next": "home"},
+        {"id": "quest", "lang": "viktoria.choice.quest", "next": "quest"},
+        {"id": "intimate", "lang": "viktoria.choice.intimate", "next": "intimate_gate", "min_affinity": 60},
+        {"id": "bye", "lang": "viktoria.choice.bye", "next": "bye", "action": "close"}
+      ]
+    },
+    "smalltalk": {
+      "text": "viktoria.dialogue.smalltalk",
+      "choices": [
+        {"id": "day", "lang": "viktoria.choice.ask_day", "next": "smalltalk_day", "affinity": 2, "mood": "joy"},
+        {"id": "more", "lang": "viktoria.choice.more", "next": "smalltalk2", "affinity": 3, "mood": "affection"},
+        {"id": "back", "lang": "viktoria.choice.back", "next": "greeting"}
+      ]
+    },
+    "smalltalk_day": {
+      "text": "viktoria.dialogue.smalltalk_day",
+      "choices": [
+        {"id": "listen", "lang": "viktoria.choice.listen", "next": "smalltalk2", "affinity": 3, "mood": "affection"},
+        {"id": "back", "lang": "viktoria.choice.back", "next": "greeting"}
+      ]
+    },
+    "smalltalk2": {
+      "text": "viktoria.dialogue.smalltalk2",
+      "choices": [
+        {"id": "compliment", "lang": "viktoria.choice.compliment", "next": "complimented", "affinity": 4, "mood": "joy"},
+        {"id": "back", "lang": "viktoria.choice.back", "next": "greeting", "affinity": 1, "mood": "joy"}
+      ]
+    },
+    "complimented": {
+      "text": "viktoria.dialogue.complimented",
+      "choices": [
+        {"id": "back", "lang": "viktoria.choice.back", "next": "greeting", "affinity": 1, "mood": "affection"}
+      ]
+    },
+    "comfort": {
+      "text": "viktoria.dialogue.comfort",
+      "choices": [
+        {"id": "hug", "lang": "viktoria.choice.hug", "next": "comforted", "affinity": 5, "mood": "affection"},
+        {"id": "back", "lang": "viktoria.choice.back", "next": "greeting"}
+      ]
+    },
+    "comforted": {
+      "text": "viktoria.dialogue.comforted",
+      "choices": [
+        {"id": "back", "lang": "viktoria.choice.back", "next": "greeting"}
+      ]
+    },
+    "flirt": {
+      "text": "viktoria.dialogue.flirt",
+      "min_affinity": 35,
+      "choices": [
+        {"id": "soft", "lang": "viktoria.choice.flirt_soft", "next": "flirt_ok", "affinity": 4, "mood": "affection"},
+        {"id": "bold", "lang": "viktoria.choice.flirt_bold", "next": "flirt_bold", "affinity": 2, "mood": "joy", "min_affinity": 50},
+        {"id": "back", "lang": "viktoria.choice.back", "next": "greeting"}
+      ]
+    },
+    "flirt_ok": {
+      "text": "viktoria.dialogue.flirt_ok",
+      "choices": [{"id": "back", "lang": "viktoria.choice.back", "next": "greeting"}]
+    },
+    "flirt_bold": {
+      "text": "viktoria.dialogue.flirt_bold",
+      "choices": [{"id": "back", "lang": "viktoria.choice.back", "next": "greeting", "affinity": 2, "mood": "affection"}]
+    },
+    "gift_hint": {
+      "text": "viktoria.dialogue.gift_hint",
+      "choices": [{"id": "back", "lang": "viktoria.choice.back", "next": "greeting"}]
+    },
+    "follow_confirm": {
+      "text": "viktoria.dialogue.follow_confirm",
+      "choices": [{"id": "back", "lang": "viktoria.choice.back", "next": "greeting"}]
+    },
+    "status": {
+      "text": "viktoria.dialogue.status",
+      "choices": [{"id": "back", "lang": "viktoria.choice.back", "next": "greeting"}]
+    },
+    "home": {
+      "text": "viktoria.dialogue.home",
+      "choices": [
+        {"id": "claim", "lang": "viktoria.choice.claim_home", "next": "home_claimed", "affinity": 5, "mood": "affection", "action": "claim_home"},
+        {"id": "live", "lang": "viktoria.choice.live_together", "next": "live_together", "affinity": 5, "mood": "affection", "action": "live_together", "min_affinity": 25},
+        {"id": "back", "lang": "viktoria.choice.back", "next": "greeting"}
+      ]
+    },
+    "home_claimed": {
+      "text": "viktoria.dialogue.home_claimed",
+      "choices": [{"id": "back", "lang": "viktoria.choice.back", "next": "greeting"}]
+    },
+    "live_together": {
+      "text": "viktoria.dialogue.live_together",
+      "min_affinity": 25,
+      "choices": [{"id": "back", "lang": "viktoria.choice.back", "next": "greeting"}]
+    },
+    "quest": {
+      "text": "viktoria.dialogue.quest",
+      "choices": [
+        {"id": "accept", "lang": "viktoria.choice.accept_quest", "next": "quest_accepted", "affinity": 2, "mood": "joy", "action": "start_quest"},
+        {"id": "progress", "lang": "viktoria.choice.quest_progress", "next": "quest_progress", "action": "quest_status"},
+        {"id": "back", "lang": "viktoria.choice.back", "next": "greeting"}
+      ]
+    },
+    "quest_accepted": {
+      "text": "viktoria.dialogue.quest_accepted",
+      "choices": [{"id": "back", "lang": "viktoria.choice.back", "next": "greeting"}]
+    },
+    "quest_progress": {
+      "text": "viktoria.dialogue.quest_progress",
+      "choices": [{"id": "back", "lang": "viktoria.choice.back", "next": "greeting"}]
+    },
+    "intimate_gate": {
+      "text": "viktoria.dialogue.intimate_gate",
+      "min_affinity": 60,
+      "choices": [
+        {"id": "consent", "lang": "viktoria.choice.intimate_yes", "next": "intimate_ok", "affinity": 3, "mood": "affection", "action": "intimate_consent"},
+        {"id": "no", "lang": "viktoria.choice.intimate_no", "next": "intimate_no"},
+        {"id": "back", "lang": "viktoria.choice.back", "next": "greeting"}
+      ]
+    },
+    "intimate_ok": {
+      "text": "viktoria.dialogue.intimate_ok",
+      "choices": [
+        {"id": "pose", "lang": "viktoria.choice.intimate_pose", "next": "bye", "action": "intimate_pose"},
+        {"id": "close_pose", "lang": "viktoria.choice.intimate_close", "next": "bye", "action": "intimate_close"}
+      ]
+    },
+    "intimate_no": {
+      "text": "viktoria.dialogue.intimate_no",
+      "choices": [{"id": "back", "lang": "viktoria.choice.back", "next": "greeting"}]
+    },
+    "bye": {
+      "text": "viktoria.dialogue.bye",
+      "choices": [{"id": "close", "lang": "viktoria.choice.close", "next": "bye", "action": "close"}]
+    }
+  }
+}

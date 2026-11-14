@@ -18,7 +18,9 @@ public final class CompanionState {
             Codec.BOOL.optionalFieldOf("livesTogether", false).forGetter(CompanionState::livesTogether),
             BlockPos.CODEC.optionalFieldOf("homePos").forGetter(s -> Optional.ofNullable(s.homePos)),
             Codec.unboundedMap(Codec.STRING, Codec.INT).optionalFieldOf("quests", Map.of()).forGetter(CompanionState::questProgress),
-            Codec.BOOL.optionalFieldOf("intimateConsent", false).forGetter(CompanionState::intimateConsent)
+            Codec.unboundedMap(Codec.STRING, Codec.INT).optionalFieldOf("questCounters", Map.of()).forGetter(CompanionState::questCounters),
+            Codec.BOOL.optionalFieldOf("intimateConsent", false).forGetter(CompanionState::intimateConsent),
+            Codec.BOOL.optionalFieldOf("metInTown", false).forGetter(CompanionState::metInTown)
     ).apply(instance, CompanionState::fromCodec));
 
     private int affinity;
@@ -28,15 +30,17 @@ public final class CompanionState {
     private boolean livesTogether;
     private BlockPos homePos;
     private final Map<String, Integer> questProgress;
+    private final Map<String, Integer> questCounters;
     private boolean intimateConsent;
+    private boolean metInTown;
 
     public CompanionState() {
-        this(0, MoodType.NEUTRAL, 0L, false, false, null, new HashMap<>(), false);
+        this(0, MoodType.NEUTRAL, 0L, false, false, null, new HashMap<>(), new HashMap<>(), false, false);
     }
 
     private CompanionState(int affinity, MoodType mood, long lastInteractGameTime, boolean following,
                            boolean livesTogether, BlockPos homePos, Map<String, Integer> questProgress,
-                           boolean intimateConsent) {
+                           Map<String, Integer> questCounters, boolean intimateConsent, boolean metInTown) {
         this.affinity = Math.max(0, Math.min(100, affinity));
         this.mood = mood;
         this.lastInteractGameTime = lastInteractGameTime;
@@ -44,14 +48,17 @@ public final class CompanionState {
         this.livesTogether = livesTogether;
         this.homePos = homePos;
         this.questProgress = new HashMap<>(questProgress);
+        this.questCounters = new HashMap<>(questCounters);
         this.intimateConsent = intimateConsent;
+        this.metInTown = metInTown;
     }
 
     private static CompanionState fromCodec(int affinity, String mood, long lastInteract, boolean following,
                                             boolean livesTogether, Optional<BlockPos> home,
-                                            Map<String, Integer> quests, boolean intimateConsent) {
+                                            Map<String, Integer> quests, Map<String, Integer> counters,
+                                            boolean intimateConsent, boolean metInTown) {
         return new CompanionState(affinity, MoodType.byName(mood), lastInteract, following, livesTogether,
-                home.orElse(null), quests, intimateConsent);
+                home.orElse(null), quests, counters, intimateConsent, metInTown);
     }
 
     public int affinity() {
@@ -110,12 +117,24 @@ public final class CompanionState {
         return questProgress;
     }
 
+    public Map<String, Integer> questCounters() {
+        return questCounters;
+    }
+
     public int questStage(String questId) {
         return questProgress.getOrDefault(questId, 0);
     }
 
     public void setQuestStage(String questId, int stage) {
         questProgress.put(questId, stage);
+    }
+
+    public int questCounter(String questId) {
+        return questCounters.getOrDefault(questId, 0);
+    }
+
+    public void setQuestCounter(String questId, int value) {
+        questCounters.put(questId, value);
     }
 
     public boolean intimateConsent() {
@@ -126,8 +145,16 @@ public final class CompanionState {
         this.intimateConsent = intimateConsent;
     }
 
+    public boolean metInTown() {
+        return metInTown;
+    }
+
+    public void setMetInTown(boolean metInTown) {
+        this.metInTown = metInTown;
+    }
+
     public CompanionState copy() {
         return new CompanionState(affinity, mood, lastInteractGameTime, following, livesTogether, homePos,
-                questProgress, intimateConsent);
+                questProgress, questCounters, intimateConsent, metInTown);
     }
 }

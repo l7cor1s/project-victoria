@@ -3,16 +3,19 @@ package com.l7cor1s.viktoria;
 import com.l7cor1s.viktoria.character.CharacterRegistry;
 import com.l7cor1s.viktoria.character.ViktoriaCharacter;
 import com.l7cor1s.viktoria.command.ViktoriaCommands;
+import com.l7cor1s.viktoria.dialogue.DialogueLoader;
 import com.l7cor1s.viktoria.entity.ModEntities;
 import com.l7cor1s.viktoria.network.ModNetworking;
 import com.l7cor1s.viktoria.relationship.ModAttachments;
 import com.l7cor1s.viktoria.spawn.McaIntegration;
+import com.l7cor1s.viktoria.spawn.ModWorldgen;
 import com.mojang.logging.LogUtils;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import org.slf4j.Logger;
 
@@ -24,12 +27,14 @@ public class ViktoriaMod {
     public ViktoriaMod(IEventBus modEventBus, ModContainer modContainer) {
         ModEntities.ENTITY_TYPES.register(modEventBus);
         ModAttachments.ATTACHMENT_TYPES.register(modEventBus);
+        ModWorldgen.FEATURES.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(ModNetworking::register);
         modEventBus.addListener(ModEntities::registerAttributes);
 
         NeoForge.EVENT_BUS.addListener(this::registerCommands);
+        NeoForge.EVENT_BUS.addListener(this::addReloadListeners);
         NeoForge.EVENT_BUS.register(com.l7cor1s.viktoria.event.ModEvents.class);
         NeoForge.EVENT_BUS.register(com.l7cor1s.viktoria.spawn.VillageSpawnHandler.class);
     }
@@ -44,5 +49,9 @@ public class ViktoriaMod {
 
     private void registerCommands(RegisterCommandsEvent event) {
         ViktoriaCommands.register(event.getDispatcher());
+    }
+
+    private void addReloadListeners(AddReloadListenerEvent event) {
+        event.addListener(new DialogueLoader());
     }
 }

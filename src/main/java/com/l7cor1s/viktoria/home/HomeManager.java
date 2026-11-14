@@ -1,6 +1,7 @@
 package com.l7cor1s.viktoria.home;
 
 import com.l7cor1s.viktoria.entity.CompanionEntity;
+import com.l7cor1s.viktoria.quest.QuestProgress;
 import com.l7cor1s.viktoria.relationship.CompanionState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -16,6 +17,7 @@ public final class HomeManager {
         state.setHomePos(pos);
         player.displayClientMessage(Component.translatable(companion.character().homeClaimLangKey(),
                 pos.getX(), pos.getY(), pos.getZ()), false);
+        QuestProgress.onHomeClaimed(player, companion, state);
     }
 
     public static void setLivesTogether(ServerPlayer player, CompanionEntity companion, CompanionState state, boolean value) {

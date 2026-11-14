@@ -42,5 +42,9 @@ public final class ModEvents {
         state.setFollowing(false);
         companion.setFollowing(false);
         companion.setAnimState("talk");
+        // Mild jealousy/irritation linger after player aggression
+        if (state.affinity() >= 35) {
+            state.setMood(MoodType.JEALOUSY);
+        }
     }
 }

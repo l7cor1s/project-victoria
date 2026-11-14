@@ -3,6 +3,7 @@ package com.l7cor1s.viktoria.character;
 import com.l7cor1s.viktoria.gift.GiftProfile;
 import com.l7cor1s.viktoria.intimate.IntimateHooks;
 import com.l7cor1s.viktoria.quest.QuestDefinition;
+import com.l7cor1s.viktoria.quest.QuestObjective;
 import com.l7cor1s.viktoria.relationship.AffinityTier;
 import com.l7cor1s.viktoria.relationship.MoodType;
 import net.minecraft.network.chat.Component;
@@ -42,9 +43,12 @@ public final class ViktoriaCharacter extends CompanionCharacter {
     @Override
     public List<QuestDefinition> quests() {
         return List.of(
-                new QuestDefinition("find_flowers", "viktoria.quest.find_flowers", 0, 15),
-                new QuestDefinition("share_home", "viktoria.quest.share_home", 25, 20),
-                new QuestDefinition("evening_walk", "viktoria.quest.evening_walk", 50, 25)
+                new QuestDefinition("find_flowers", "viktoria.quest.find_flowers", 0, 15,
+                        QuestObjective.GIVE_FLOWERS, 3),
+                new QuestDefinition("share_home", "viktoria.quest.share_home", 20, 20,
+                        QuestObjective.CLAIM_HOME, 1),
+                new QuestDefinition("evening_walk", "viktoria.quest.evening_walk", 40, 25,
+                        QuestObjective.FOLLOW_AT_NIGHT, 400)
         );
     }
 
