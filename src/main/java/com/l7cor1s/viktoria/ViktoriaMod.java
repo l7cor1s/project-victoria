@@ -5,6 +5,7 @@ import com.l7cor1s.viktoria.character.ViktoriaCharacter;
 import com.l7cor1s.viktoria.command.ViktoriaCommands;
 import com.l7cor1s.viktoria.dialogue.DialogueLoader;
 import com.l7cor1s.viktoria.entity.ModEntities;
+import com.l7cor1s.viktoria.gift.GiftLoader;
 import com.l7cor1s.viktoria.network.ModNetworking;
 import com.l7cor1s.viktoria.relationship.ModAttachments;
 import com.l7cor1s.viktoria.spawn.McaIntegration;
@@ -53,5 +54,6 @@ public class ViktoriaMod {
 
     private void addReloadListeners(AddReloadListenerEvent event) {
         event.addListener(new DialogueLoader());
+        event.addListener(new GiftLoader());
     }
 }

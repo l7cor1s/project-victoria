@@ -64,7 +64,7 @@ public class DialogueScreen extends Screen {
     private void select(DialogueChoice choice) {
         PacketDistributor.sendToServer(new DialogueChoicePayload(entityId, nodeId, choice.id()));
         if ("close".equals(choice.action()) || "intimate_pose".equals(choice.action())
-                || "intimate_close".equals(choice.action())) {
+                || "intimate_close".equals(choice.action()) || "intimate_embrace".equals(choice.action())) {
             onClose();
             return;
         }

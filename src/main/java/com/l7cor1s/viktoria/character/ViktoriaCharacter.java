@@ -1,6 +1,7 @@
 package com.l7cor1s.viktoria.character;
 
 import com.l7cor1s.viktoria.gift.GiftProfile;
+import com.l7cor1s.viktoria.gift.GiftProfiles;
 import com.l7cor1s.viktoria.intimate.IntimateHooks;
 import com.l7cor1s.viktoria.quest.QuestDefinition;
 import com.l7cor1s.viktoria.quest.QuestObjective;
@@ -32,12 +33,14 @@ public final class ViktoriaCharacter extends CompanionCharacter {
 
     @Override
     public GiftProfile giftProfile() {
-        return GiftProfile.builder()
+        GiftProfile fallback = GiftProfile.builder()
                 .loved(Items.POPPY, Items.ROSE_BUSH, Items.PINK_PETALS, Items.CAKE, Items.GOLDEN_APPLE)
                 .liked(Items.COOKIE, Items.SWEET_BERRIES, Items.HONEY_BOTTLE, Items.BOOK)
                 .likedTag(ItemTags.FLOWERS)
                 .hated(Items.ROTTEN_FLESH, Items.POISONOUS_POTATO, Items.SPIDER_EYE)
                 .build();
+        GiftProfiles.setFallback(ID, fallback);
+        return fallback;
     }
 
     @Override

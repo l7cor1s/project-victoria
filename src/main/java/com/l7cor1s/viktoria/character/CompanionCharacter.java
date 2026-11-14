@@ -41,7 +41,12 @@ public abstract class CompanionCharacter {
 
     public abstract AffinityTier[] affinityTiers();
 
+    /** Code fallback; prefer {@link #resolvedGiftProfile()} which includes JSON overlays. */
     public abstract GiftProfile giftProfile();
+
+    public GiftProfile resolvedGiftProfile() {
+        return com.l7cor1s.viktoria.gift.GiftProfiles.get(id).orElseGet(this::giftProfile);
+    }
 
     public abstract List<QuestDefinition> quests();
 
@@ -53,14 +58,14 @@ public abstract class CompanionCharacter {
     }
 
     public Optional<String> reactToGift(ItemStack stack, int affinity) {
-        return giftProfile().reactionKey(stack, affinity);
+        return resolvedGiftProfile().reactionKey(stack, affinity);
     }
 
     public int giftAffinityDelta(ItemStack stack) {
-        return giftProfile().affinityDelta(stack);
+        return resolvedGiftProfile().affinityDelta(stack);
     }
 
     public MoodType giftMoodDelta(ItemStack stack) {
-        return giftProfile().moodAfterGift(stack);
+        return resolvedGiftProfile().moodAfterGift(stack);
     }
 }

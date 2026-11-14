@@ -1,0 +1,200 @@
+{
+  "meta": {
+    "format_version": "4.10",
+    "model_format": "free",
+    "box_uv": false
+  },
+  "name": "viktoria",
+  "model_identifier": "viktoria",
+  "visible_box": [
+    1,
+    1,
+    0
+  ],
+  "variable_placeholders": "",
+  "resolution": {
+    "width": 256,
+    "height": 256
+  },
+  "elements": [
+    {
+      "name": "head",
+      "type": "cube",
+      "origin": [
+        0,
+        24,
+        0
+      ],
+      "from": [
+        -4,
+        24,
+        -4
+      ],
+      "to": [
+        4,
+        32,
+        4
+      ],
+      "uv_offset": [
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            8,
+            40,
+            40
+          ]
+        },
+        "east": {
+          "uv": [
+            40,
+            8,
+            48,
+            40
+          ]
+        },
+        "south": {
+          "uv": [
+            48,
+            8,
+            80,
+            40
+          ]
+        },
+        "west": {
+          "uv": [
+            0,
+            8,
+            8,
+            40
+          ]
+        },
+        "up": {
+          "uv": [
+            8,
+            0,
+            40,
+            8
+          ]
+        },
+        "down": {
+          "uv": [
+            40,
+            0,
+            72,
+            8
+          ]
+        }
+      }
+    },
+    {
+      "name": "blazer_left",
+      "type": "cube",
+      "from": [
+        -4.5,
+        12.2,
+        -2.35
+      ],
+      "to": [
+        -2.3,
+        23.8,
+        2.35
+      ],
+      "uv_offset": [
+        80,
+        64
+      ]
+    },
+    {
+      "name": "blazer_right",
+      "type": "cube",
+      "from": [
+        2.3,
+        12.2,
+        -2.35
+      ],
+      "to": [
+        4.5,
+        23.8,
+        2.35
+      ],
+      "uv_offset": [
+        96,
+        64
+      ]
+    },
+    {
+      "name": "skirt",
+      "type": "cube",
+      "from": [
+        -4.4,
+        10.9,
+        -2.55
+      ],
+      "to": [
+        4.4,
+        14.4,
+        2.55
+      ],
+      "uv_offset": [
+        160,
+        64
+      ]
+    },
+    {
+      "name": "boot_r",
+      "type": "cube",
+      "from": [
+        -4.15,
+        0.15,
+        -2.3
+      ],
+      "to": [
+        0.35,
+        8.85,
+        2.3
+      ],
+      "uv_offset": [
+        0,
+        140
+      ]
+    },
+    {
+      "name": "boot_l",
+      "type": "cube",
+      "from": [
+        -0.35,
+        0.15,
+        -2.3
+      ],
+      "to": [
+        4.15,
+        8.85,
+        2.3
+      ],
+      "uv_offset": [
+        16,
+        140
+      ]
+    }
+  ],
+  "outliner": [
+    "head",
+    "blazer_left",
+    "blazer_right",
+    "skirt",
+    "boot_r",
+    "boot_l"
+  ],
+  "textures": [
+    {
+      "name": "viktoria",
+      "path": "../textures/entity/viktoria.png",
+      "relative_path": "../textures/entity/viktoria.png"
+    }
+  ],
+  "notes": "Authoring companion for geo/entity/viktoria.geo.json \u2014 keep in sync when editing in Blockbench."
+}

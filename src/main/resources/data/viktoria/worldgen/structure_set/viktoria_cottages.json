@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "viktoria:viktoria_cottage",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 40,
+    "separation": 16,
+    "salt": 314159265
+  }
+}

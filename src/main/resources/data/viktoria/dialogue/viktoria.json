@@ -139,7 +139,8 @@
       "text": "viktoria.dialogue.intimate_ok",
       "choices": [
         {"id": "pose", "lang": "viktoria.choice.intimate_pose", "next": "bye", "action": "intimate_pose"},
-        {"id": "close_pose", "lang": "viktoria.choice.intimate_close", "next": "bye", "action": "intimate_close"}
+        {"id": "close_pose", "lang": "viktoria.choice.intimate_close", "next": "bye", "action": "intimate_close"},
+        {"id": "embrace", "lang": "viktoria.choice.intimate_embrace", "next": "bye", "action": "intimate_embrace"}
       ]
     },
     "intimate_no": {

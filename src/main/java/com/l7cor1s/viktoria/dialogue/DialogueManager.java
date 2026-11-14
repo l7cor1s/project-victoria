@@ -109,6 +109,11 @@ public final class DialogueManager {
                         return;
                     }
                 }
+                case "intimate_embrace" -> {
+                    if (activateIntimate(player, companion, state, "intimate_embrace")) {
+                        return;
+                    }
+                }
                 default -> {
                 }
             }

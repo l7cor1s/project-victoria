@@ -40,12 +40,15 @@ Jar: `build/libs/viktoria-0.1.0.jar`
 | Character registry | Working |
 | JSON dialogue loader + RU trees | Working |
 | Affinity / mood reactions | Working |
-| Gifts / follow | Working |
+| Gifts / follow + **gift JSON loader** | Working |
 | Real quest objectives | Working |
-| House worldgen feature | Working |
-| MCA town soft-dep | Working (reflection; graceful without MCA) |
-| Intimate poses (gated) | Working (`intimate` / `intimate_close`) |
-| GeckoLib model toward reference | Improved placeholder (not final Blockbench art) |
+| House Feature + jigsaw/NBT cottage | Working |
+| MCA town soft-dep (building-aware) | Working (graceful without MCA) |
+| Intimate poses (gated) | Working (`intimate` / `intimate_close` / `intimate_embrace`) |
+| GeckoLib model toward reference | Layered outfit geo + 256² texture + `.bbmodel` |
+
+### Intimate test
+`/viktoria summon` → `/viktoria affinity 70` → dialogue **Близость…** → consent → pose choice.
 
 ## Extending
 

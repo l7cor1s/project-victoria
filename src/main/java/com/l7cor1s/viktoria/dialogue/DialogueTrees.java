@@ -108,7 +108,8 @@ public final class DialogueTrees {
         ), 60, null));
         vika.put("intimate_ok", new DialogueNode("intimate_ok", "viktoria.dialogue.intimate_ok", List.of(
                 new DialogueChoice("pose", "viktoria.choice.intimate_pose", "bye", 0, null, "intimate_pose"),
-                new DialogueChoice("close_pose", "viktoria.choice.intimate_close", "bye", 0, null, "intimate_close")
+                new DialogueChoice("close_pose", "viktoria.choice.intimate_close", "bye", 0, null, "intimate_close"),
+                new DialogueChoice("embrace", "viktoria.choice.intimate_embrace", "bye", 0, null, "intimate_embrace")
         )));
         vika.put("intimate_no", new DialogueNode("intimate_no", "viktoria.dialogue.intimate_no", List.of(
                 new DialogueChoice("back", "viktoria.choice.back", "greeting", 0, null, null)

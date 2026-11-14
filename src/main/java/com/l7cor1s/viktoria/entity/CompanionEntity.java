@@ -212,6 +212,10 @@ public class CompanionEntity extends PathfinderMob implements GeoEntity {
             state.setAnimation(RawAnimation.begin().thenLoop("intimate_close"));
             return PlayState.CONTINUE;
         }
+        if ("intimate_embrace".equals(anim)) {
+            state.setAnimation(RawAnimation.begin().thenLoop("intimate_embrace"));
+            return PlayState.CONTINUE;
+        }
         if (state.isMoving()) {
             state.setAnimation(RawAnimation.begin().thenLoop("walk"));
             return PlayState.CONTINUE;
