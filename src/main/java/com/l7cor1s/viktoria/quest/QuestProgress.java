@@ -4,10 +4,13 @@ import com.l7cor1s.viktoria.character.CompanionCharacter;
 import com.l7cor1s.viktoria.entity.CompanionEntity;
 import com.l7cor1s.viktoria.relationship.CompanionState;
 import com.l7cor1s.viktoria.relationship.MoodType;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 public final class QuestProgress {
     public static final int STAGE_LOCKED = 0;
@@ -61,11 +64,11 @@ public final class QuestProgress {
                 continue;
             }
             if (quest.objective() == QuestObjective.GIVE_FLOWERS && stack.is(ItemTags.FLOWERS)) {
-                int next = state.questCounter(quest.id()) + 1;
-                state.setQuestCounter(quest.id(), next);
-                player.displayClientMessage(Component.translatable("viktoria.quest.progress",
-                        Component.translatable(quest.langKey()), next, quest.targetCount()), true);
-                tryComplete(player, companion, state, quest);
+                bump(player, companion, state, quest, 1);
+                return;
+            }
+            if (quest.objective() == QuestObjective.BRING_ITEMS && matchesBringTarget(quest, stack)) {
+                bump(player, companion, state, quest, 1);
                 return;
             }
         }
@@ -102,6 +105,57 @@ public final class QuestProgress {
         }
     }
 
+    public static void onMobKill(ServerPlayer player, CompanionEntity companion, CompanionState state) {
+        for (QuestDefinition quest : companion.character().quests()) {
+            if (state.questStage(quest.id()) != STAGE_ACTIVE) {
+                continue;
+            }
+            if (quest.objective() == QuestObjective.KILL_MOBS) {
+                bump(player, companion, state, quest, 1);
+                return;
+            }
+        }
+    }
+
+    public static void onBiomeVisit(ServerPlayer player, CompanionEntity companion, CompanionState state, String biomeId) {
+        for (QuestDefinition quest : companion.character().quests()) {
+            if (state.questStage(quest.id()) != STAGE_ACTIVE) {
+                continue;
+            }
+            if (quest.objective() != QuestObjective.VISIT_BIOME) {
+                continue;
+            }
+            String want = quest.targetBiomeKey();
+            if (want == null || want.isBlank()) {
+                continue;
+            }
+            if (biomeId.equals(want) || biomeId.contains(want) || biomeId.endsWith(want)) {
+                state.markBiomeVisited(biomeId);
+                state.setQuestCounter(quest.id(), quest.targetCount());
+                tryComplete(player, companion, state, quest);
+                return;
+            }
+        }
+    }
+
+    private static void bump(ServerPlayer player, CompanionEntity companion, CompanionState state,
+                             QuestDefinition quest, int amount) {
+        int next = state.questCounter(quest.id()) + amount;
+        state.setQuestCounter(quest.id(), next);
+        player.displayClientMessage(Component.translatable("viktoria.quest.progress",
+                Component.translatable(quest.langKey()), next, quest.targetCount()), true);
+        tryComplete(player, companion, state, quest);
+    }
+
+    private static boolean matchesBringTarget(QuestDefinition quest, ItemStack stack) {
+        String want = quest.targetItemId();
+        if (want == null || want.isBlank()) {
+            return stack.is(Items.IRON_INGOT) || stack.is(Items.OAK_LOG) || stack.is(Items.COBBLESTONE);
+        }
+        ResourceLocation id = BuiltInRegistries.ITEM.getKey(stack.getItem());
+        return id.toString().equals(want) || id.getPath().equals(want);
+    }
+
     private static void tryComplete(ServerPlayer player, CompanionEntity companion, CompanionState state, QuestDefinition quest) {
         if (state.questCounter(quest.id()) < quest.targetCount()) {
             return;
@@ -109,6 +163,17 @@ public final class QuestProgress {
         state.setQuestStage(quest.id(), STAGE_DONE);
         state.addAffinity(quest.rewardAffinity());
         state.setMood(MoodType.JOY);
+        if (quest.rewardXp() > 0) {
+            player.giveExperiencePoints(quest.rewardXp());
+        }
+        // Small material thank-you
+        if (quest.objective() == QuestObjective.KILL_MOBS) {
+            player.getInventory().add(new ItemStack(Items.COOKED_BEEF, 3));
+        } else if (quest.objective() == QuestObjective.BRING_ITEMS) {
+            player.getInventory().add(new ItemStack(Items.GOLDEN_APPLE, 1));
+        } else if (quest.objective() == QuestObjective.VISIT_BIOME) {
+            player.getInventory().add(new ItemStack(Items.MAP, 1));
+        }
         player.displayClientMessage(Component.translatable("viktoria.quest.completed",
                 Component.translatable(quest.langKey()), quest.rewardAffinity()), false);
     }
@@ -118,6 +183,9 @@ public final class QuestProgress {
             case GIVE_FLOWERS -> "viktoria.quest.hint.flowers";
             case CLAIM_HOME -> "viktoria.quest.hint.home";
             case FOLLOW_AT_NIGHT -> "viktoria.quest.hint.walk";
+            case KILL_MOBS -> "viktoria.quest.hint.hunt";
+            case BRING_ITEMS -> "viktoria.quest.hint.gather";
+            case VISIT_BIOME -> "viktoria.quest.hint.explore";
         };
     }
 }

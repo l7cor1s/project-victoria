@@ -1,5 +1,6 @@
 package com.l7cor1s.viktoria.dialogue;
 
+import com.l7cor1s.viktoria.config.ViktoriaConfig;
 import com.l7cor1s.viktoria.entity.CompanionEntity;
 import com.l7cor1s.viktoria.home.HomeManager;
 import com.l7cor1s.viktoria.intimate.IntimateHooks;
@@ -18,11 +19,20 @@ public final class DialogueManager {
 
     public static void open(ServerPlayer player, CompanionEntity companion, String nodeId) {
         String characterId = companion.getCharacterId();
-        DialogueNode node = DialogueTrees.get(characterId, nodeId).orElse(null);
+        CompanionState state = player.getData(ModAttachments.COMPANION_DATA.get()).getOrCreate(characterId);
+
+        String resolved = nodeId;
+        if ("greeting".equals(nodeId)) {
+            String contextual = DialogueContext.resolveGreeting(player, companion, state);
+            if (DialogueTrees.get(characterId, contextual).isPresent()) {
+                resolved = contextual;
+            }
+        }
+
+        DialogueNode node = DialogueTrees.get(characterId, resolved).orElse(null);
         if (node == null) {
             return;
         }
-        CompanionState state = player.getData(ModAttachments.COMPANION_DATA.get()).getOrCreate(characterId);
         if (state.affinity() < node.minAffinity()) {
             player.displayClientMessage(Component.translatable("viktoria.dialogue.locked_affinity",
                     companion.character().displayName()), true);
@@ -90,7 +100,25 @@ public final class DialogueManager {
                 case "live_together" -> HomeManager.setLivesTogether(player, companion, state, true);
                 case "start_quest" -> QuestProgress.startNext(player, companion, state);
                 case "quest_status" -> QuestProgress.showStatus(player, companion, state);
+                case "sit_together" -> {
+                    companion.getNavigation().stop();
+                    companion.setFollowing(false);
+                    state.setFollowing(false);
+                    companion.setAnimState("sit");
+                    player.displayClientMessage(Component.translatable("viktoria.interact.sit",
+                            companion.character().displayName()), true);
+                }
+                case "watch_sunset" -> {
+                    companion.getNavigation().stop();
+                    companion.setAnimState("look_at_sunset");
+                    player.displayClientMessage(Component.translatable("viktoria.interact.sunset",
+                            companion.character().displayName()), true);
+                }
                 case "intimate_consent" -> {
+                    if (!ViktoriaConfig.intimateEnabled()) {
+                        player.displayClientMessage(Component.translatable("viktoria.intimate.disabled"), true);
+                        return;
+                    }
                     IntimateHooks hooks = companion.character().intimateHooks();
                     if (hooks.canOffer(state)) {
                         state.setIntimateConsent(true);
@@ -125,6 +153,10 @@ public final class DialogueManager {
     }
 
     private static boolean activateIntimate(ServerPlayer player, CompanionEntity companion, CompanionState state, String anim) {
+        if (!ViktoriaConfig.intimateEnabled()) {
+            player.displayClientMessage(Component.translatable("viktoria.intimate.disabled"), true);
+            return true;
+        }
         if (state.intimateConsent() && companion.character().intimateHooks().canOffer(state)) {
             companion.setAnimState(anim);
             player.displayClientMessage(Component.translatable("viktoria.intimate.active"), true);

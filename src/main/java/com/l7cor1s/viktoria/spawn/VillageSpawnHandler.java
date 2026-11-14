@@ -2,6 +2,7 @@ package com.l7cor1s.viktoria.spawn;
 
 import com.l7cor1s.viktoria.ViktoriaMod;
 import com.l7cor1s.viktoria.character.ViktoriaCharacter;
+import com.l7cor1s.viktoria.config.ViktoriaConfig;
 import com.l7cor1s.viktoria.entity.CompanionEntity;
 import com.l7cor1s.viktoria.entity.ModEntities;
 import com.l7cor1s.viktoria.quest.QuestProgress;
@@ -55,7 +56,8 @@ public final class VillageSpawnHandler {
             return;
         }
 
-        if (McaIntegration.isPresent() && player.getRandom().nextDouble() < MCA_TOWN_CHANCE) {
+        double spawnScale = ViktoriaConfig.AUTO_SPAWN_CHANCE.get();
+        if (McaIntegration.isPresent() && player.getRandom().nextDouble() < MCA_TOWN_CHANCE * spawnScale) {
             if (McaIntegration.trySpawnInTown(player)) {
                 return;
             }
@@ -70,7 +72,7 @@ public final class VillageSpawnHandler {
         if (alreadyNear) {
             return;
         }
-        if (player.getRandom().nextDouble() > VILLAGE_CHANCE) {
+        if (player.getRandom().nextDouble() > VILLAGE_CHANCE * spawnScale) {
             return;
         }
         BlockPos origin = player.blockPosition().offset(

@@ -1,5 +1,6 @@
 package com.l7cor1s.viktoria.entity;
 
+import com.l7cor1s.viktoria.autonomy.CompanionAutonomy;
 import com.l7cor1s.viktoria.character.CharacterRegistry;
 import com.l7cor1s.viktoria.character.CompanionCharacter;
 import com.l7cor1s.viktoria.character.ViktoriaCharacter;
@@ -48,6 +49,7 @@ public class CompanionEntity extends PathfinderMob implements GeoEntity {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private int talkTicks;
     private int stillTicks;
+    private int giftTicks;
 
     public CompanionEntity(EntityType<? extends CompanionEntity> type, Level level) {
         super(type, level);
@@ -74,11 +76,15 @@ public class CompanionEntity extends PathfinderMob implements GeoEntity {
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
         this.goalSelector.addGoal(1, new CompanionFollowGoal(this, 1.15));
-        // Light wander only when not resting — lets sit pose settle
         this.goalSelector.addGoal(2, new WaterAvoidingRandomStrollGoal(this, 0.7) {
             @Override
             public boolean canUse() {
-                return !"sit".equals(getAnimState()) && !"talk".equals(getAnimState()) && super.canUse();
+                String anim = getAnimState();
+                return !"sit".equals(anim)
+                        && !"talk".equals(anim)
+                        && !"sleep".equals(anim)
+                        && !"look_at_sunset".equals(anim)
+                        && super.canUse();
             }
         });
         this.goalSelector.addGoal(3, new LookAtPlayerGoal(this, Player.class, 8.0f));
@@ -108,8 +114,10 @@ public class CompanionEntity extends PathfinderMob implements GeoEntity {
     public void setAnimState(String state) {
         this.entityData.set(ANIM_STATE, state);
         if ("talk".equals(state)) {
-            // Keep talking pose for the length of a typical dialogue exchange
             this.talkTicks = 200;
+        }
+        if ("accept_gift".equals(state) || "gift".equals(state)) {
+            this.giftTicks = 40;
         }
     }
 
@@ -120,27 +128,36 @@ public class CompanionEntity extends PathfinderMob implements GeoEntity {
     @Override
     public void tick() {
         super.tick();
-        if (!level().isClientSide && talkTicks > 0) {
-            talkTicks--;
-            if (talkTicks == 0 && !isPoseLocked(getAnimState())) {
-                setAnimState(isFollowing() ? "follow" : "idle");
-            }
-        }
         if (!level().isClientSide) {
+            if (talkTicks > 0) {
+                talkTicks--;
+                if (talkTicks == 0 && !isPoseLocked(getAnimState())) {
+                    setAnimState(isFollowing() ? "follow" : "idle");
+                }
+            }
+            if (giftTicks > 0) {
+                giftTicks--;
+                if (giftTicks == 0 && ("accept_gift".equals(getAnimState()) || "gift".equals(getAnimState()))) {
+                    setAnimState(isFollowing() ? "follow" : "idle");
+                }
+            }
             syncFollowFromOwner();
             updateRestPose();
+            CompanionAutonomy.tick(this);
         }
     }
 
     private static boolean isPoseLocked(String anim) {
-        return "gift".equals(anim)
+        return "accept_gift".equals(anim)
+                || "gift".equals(anim)
                 || "intimate".equals(anim)
                 || "intimate_close".equals(anim)
                 || "intimate_embrace".equals(anim)
-                || "talk".equals(anim);
+                || "talk".equals(anim)
+                || "sleep".equals(anim)
+                || "look_at_sunset".equals(anim);
     }
 
-    /** Sit after standing still while not following — stands when moving or following. */
     private void updateRestPose() {
         String anim = getAnimState();
         if (isPoseLocked(anim) || isFollowing()) {
@@ -158,7 +175,7 @@ public class CompanionEntity extends PathfinderMob implements GeoEntity {
             return;
         }
         stillTicks++;
-        if (stillTicks > 160 && !"sit".equals(anim)) {
+        if (stillTicks > 160 && !"sit".equals(anim) && !"sleep".equals(anim)) {
             setAnimState("sit");
         }
     }
@@ -172,7 +189,6 @@ public class CompanionEntity extends PathfinderMob implements GeoEntity {
         if (state.following() != isFollowing()) {
             setFollowing(state.following());
         }
-        // Mild loneliness if ignored for a long time
         long now = level().getGameTime();
         if (state.lastInteractGameTime() > 0 && now - state.lastInteractGameTime() > 24000L) {
             if (state.mood() != MoodType.LONELY && state.mood() != MoodType.IRRITATION) {
@@ -195,6 +211,7 @@ public class CompanionEntity extends PathfinderMob implements GeoEntity {
         CompanionState state = data.getOrCreate(getCharacterId());
         state.touch(level().getGameTime());
 
+        // Gift: item in main hand + RMB
         if (!held.isEmpty() && hand == InteractionHand.MAIN_HAND) {
             return GiftHandler.tryGiveGift(serverPlayer, this, held);
         }
@@ -231,7 +248,7 @@ public class CompanionEntity extends PathfinderMob implements GeoEntity {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        // Longer transition window softens idle/talk/walk/sit blends
+        // Controllers reserved: idle (breathing), walk, sit, sleep, accept_gift, look_at_sunset (+ talk/follow/intimate)
         controllers.add(new AnimationController<>(this, "main", 8, this::predicate));
     }
 
@@ -241,8 +258,8 @@ public class CompanionEntity extends PathfinderMob implements GeoEntity {
             state.setAnimation(RawAnimation.begin().thenLoop("talk"));
             return PlayState.CONTINUE;
         }
-        if ("gift".equals(anim)) {
-            state.setAnimation(RawAnimation.begin().thenPlay("gift"));
+        if ("accept_gift".equals(anim) || "gift".equals(anim)) {
+            state.setAnimation(RawAnimation.begin().thenPlay("accept_gift"));
             return PlayState.CONTINUE;
         }
         if ("intimate".equals(anim)) {
@@ -255,6 +272,14 @@ public class CompanionEntity extends PathfinderMob implements GeoEntity {
         }
         if ("intimate_embrace".equals(anim)) {
             state.setAnimation(RawAnimation.begin().thenLoop("intimate_embrace"));
+            return PlayState.CONTINUE;
+        }
+        if ("sleep".equals(anim)) {
+            state.setAnimation(RawAnimation.begin().thenLoop("sleep"));
+            return PlayState.CONTINUE;
+        }
+        if ("look_at_sunset".equals(anim)) {
+            state.setAnimation(RawAnimation.begin().thenLoop("look_at_sunset"));
             return PlayState.CONTINUE;
         }
         if (state.isMoving()) {

@@ -117,6 +117,39 @@ public final class DialogueTrees {
         vika.put("bye", new DialogueNode("bye", "viktoria.dialogue.bye", List.of(
                 new DialogueChoice("close", "viktoria.choice.close", "bye", 0, null, "close")
         )));
+
+        // Contextual / memory greetings
+        DialogueChoice back = new DialogueChoice("back", "viktoria.choice.back", "greeting", 0, null, null);
+        DialogueChoice sit = new DialogueChoice("sit", "viktoria.choice.sit_together", "sit_together", 2, "affection", "sit_together");
+        DialogueChoice sunset = new DialogueChoice("sunset", "viktoria.choice.watch_sunset", "watch_sunset", 3, "joy", "watch_sunset");
+        for (String id : List.of("memory_gift", "memory_gift_flower", "memory_missed", "memory_death", "memory_hurt",
+                "ambient_rain", "ambient_sunset", "ambient_night", "ambient_forest", "ambient_desert", "ambient_snow",
+                "sit_together", "watch_sunset")) {
+            String textKey = "viktoria.dialogue." + id;
+            List<DialogueChoice> choices = new java.util.ArrayList<>();
+            if ("sit_together".equals(id) || "watch_sunset".equals(id)) {
+                choices.add(back);
+            } else {
+                choices.add(new DialogueChoice("chat", "viktoria.choice.chat", "smalltalk", 2, "affection", null));
+                if (!id.startsWith("ambient_night") && !id.equals("memory_death")) {
+                    choices.add(sit);
+                }
+                if (id.equals("ambient_sunset") || id.equals("greeting")) {
+                    choices.add(sunset);
+                }
+                choices.add(back);
+            }
+            vika.put(id, new DialogueNode(id, textKey, choices));
+        }
+
+        // Enrich main greeting with sit / sunset
+        DialogueNode greeting = vika.get("greeting");
+        java.util.ArrayList<DialogueChoice> gChoices = new java.util.ArrayList<>(greeting.choices());
+        gChoices.add(4, sit);
+        gChoices.add(5, sunset);
+        vika.put("greeting", new DialogueNode(greeting.id(), greeting.textKey(), greeting.moodText(), gChoices,
+                greeting.minAffinity(), greeting.requiredMood()));
+
         BUILTINS.put(ViktoriaCharacter.ID, vika);
     }
 

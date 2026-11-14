@@ -3,6 +3,8 @@ package com.l7cor1s.viktoria;
 import com.l7cor1s.viktoria.character.CharacterRegistry;
 import com.l7cor1s.viktoria.character.ViktoriaCharacter;
 import com.l7cor1s.viktoria.command.ViktoriaCommands;
+import com.l7cor1s.viktoria.compat.ModCompat;
+import com.l7cor1s.viktoria.config.ViktoriaConfig;
 import com.l7cor1s.viktoria.dialogue.DialogueLoader;
 import com.l7cor1s.viktoria.entity.ModEntities;
 import com.l7cor1s.viktoria.gift.GiftLoader;
@@ -14,6 +16,7 @@ import com.mojang.logging.LogUtils;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
@@ -30,6 +33,8 @@ public class ViktoriaMod {
         ModAttachments.ATTACHMENT_TYPES.register(modEventBus);
         ModWorldgen.FEATURES.register(modEventBus);
 
+        modContainer.registerConfig(ModConfig.Type.COMMON, ViktoriaConfig.SPEC);
+
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(ModNetworking::register);
         modEventBus.addListener(ModEntities::registerAttributes);
@@ -43,6 +48,7 @@ public class ViktoriaMod {
     private void commonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
             CharacterRegistry.register(new ViktoriaCharacter());
+            ModCompat.bootstrap();
             McaIntegration.bootstrap();
             LOGGER.info("Viktoria companion framework ready. Characters: {}", CharacterRegistry.ids());
         });

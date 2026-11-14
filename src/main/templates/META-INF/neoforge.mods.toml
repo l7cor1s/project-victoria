@@ -9,7 +9,7 @@ displayName="${mod_name}"
 authors="l7cor1s"
 description='''
 Одиночный компаньон-мод: Виктория (Вика) и расширяемая система персонажей.
-Russian SP companion framework with dialogue, affinity, gifts, follow, home and quests.
+Russian SP companion framework with dialogue, affinity, gifts, follow, home, quests and soft-dep integrations.
 '''
 
 [[dependencies.${mod_id}]]
@@ -29,13 +29,55 @@ Russian SP companion framework with dialogue, affinity, gifts, follow, home and 
 [[dependencies.${mod_id}]]
     modId="geckolib"
     type="required"
-    versionRange="[4.7,)"
+    versionRange="[4.9,)"
     ordering="NONE"
     side="BOTH"
 
-# Soft dependency: Minecraft Comes Alive town spawn hook (optional).
+[[dependencies.${mod_id}]]
+    modId="cloth_config"
+    type="required"
+    versionRange="[15,)"
+    ordering="NONE"
+    side="BOTH"
+
+# Soft dependencies — mod works without them.
+[[dependencies.${mod_id}]]
+    modId="playeranimator"
+    type="optional"
+    versionRange="[0,)"
+    ordering="NONE"
+    side="BOTH"
+
 [[dependencies.${mod_id}]]
     modId="mca"
+    type="optional"
+    versionRange="[0,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="create"
+    type="optional"
+    versionRange="[0,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="irons_spellbooks"
+    type="optional"
+    versionRange="[0,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="farmersdelight"
+    type="optional"
+    versionRange="[0,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="kaleidoscope_cookery"
     type="optional"
     versionRange="[0,)"
     ordering="NONE"

@@ -51,7 +51,11 @@ public final class ViktoriaCharacter extends CompanionCharacter {
                 new QuestDefinition("share_home", "viktoria.quest.share_home", 20, 20,
                         QuestObjective.CLAIM_HOME, 1),
                 new QuestDefinition("evening_walk", "viktoria.quest.evening_walk", 40, 25,
-                        QuestObjective.FOLLOW_AT_NIGHT, 400)
+                        QuestObjective.FOLLOW_AT_NIGHT, 400),
+                QuestDefinition.kill("hunt_guards", "viktoria.quest.hunt_guards", 25, 18, 5, 40),
+                QuestDefinition.bring("gather_iron", "viktoria.quest.gather_iron", 30, 16, 8, 35,
+                        "minecraft:iron_ingot"),
+                QuestDefinition.explore("see_forest", "viktoria.quest.see_forest", 15, 12, 25, "forest")
         );
     }
 

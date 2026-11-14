@@ -34,6 +34,14 @@ repositories {
             includeGroup('software.bernie.geckolib')
         }
     }
+    maven {
+        name = 'Shedaniel'
+        url = 'https://maven.shedaniel.me/'
+    }
+    maven {
+        name = 'Kosmx'
+        url = 'https://maven.kosmx.dev/'
+    }
 }
 
 base {
@@ -123,6 +131,10 @@ configurations {
 
 dependencies {
     implementation "software.bernie.geckolib:geckolib-neoforge-1.21.1:${geckolib_version}"
+    implementation "me.shedaniel.cloth:cloth-config-neoforge:${cloth_config_version}"
+    // Soft-dep: available for local testing; not required at runtime for players.
+    compileOnly "dev.kosmx.player-anim:player-animation-lib-forge:${player_anim_version}"
+    localRuntime "dev.kosmx.player-anim:player-animation-lib-forge:${player_anim_version}"
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
