@@ -1,0 +1,8 @@
+{
+  "character": "viktoria",
+  "loved": ["minecraft:poppy", "minecraft:rose_bush", "minecraft:pink_petals", "minecraft:cake", "minecraft:golden_apple"],
+  "liked": ["minecraft:cookie", "minecraft:sweet_berries", "minecraft:honey_bottle", "minecraft:book"],
+  "liked_tags": ["minecraft:flowers"],
+  "hated": ["minecraft:rotten_flesh", "minecraft:poisonous_potato", "minecraft:spider_eye"],
+  "note": "Runtime GiftProfile in ViktoriaCharacter currently authoritative; this JSON is the data-driven mirror for future loaders."
+}

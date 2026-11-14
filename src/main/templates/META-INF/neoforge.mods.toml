@@ -1,0 +1,42 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+authors="l7cor1s"
+description='''
+Одиночный компаньон-мод: Виктория (Вика) и расширяемая система персонажей.
+Russian SP companion framework with dialogue, affinity, gifts, follow, home and quests.
+'''
+
+[[dependencies.${mod_id}]]
+    modId="neoforge"
+    type="required"
+    versionRange="[${neo_version},)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    type="required"
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="geckolib"
+    type="required"
+    versionRange="[4.7,)"
+    ordering="NONE"
+    side="BOTH"
+
+# Soft dependency: Minecraft Comes Alive town spawn hook (optional).
+[[dependencies.${mod_id}]]
+    modId="mca"
+    type="optional"
+    versionRange="[0,)"
+    ordering="NONE"
+    side="BOTH"
