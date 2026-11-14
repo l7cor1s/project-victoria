@@ -49,7 +49,10 @@ public class CompanionFollowGoal extends Goal {
     public void stop() {
         owner = null;
         companion.getNavigation().stop();
-        if (!"talk".equals(companion.getAnimState()) && !"gift".equals(companion.getAnimState())) {
+        String anim = companion.getAnimState();
+        if (!"talk".equals(anim) && !"gift".equals(anim)
+                && !"intimate".equals(anim) && !"intimate_close".equals(anim)
+                && !"intimate_embrace".equals(anim)) {
             companion.setAnimState("idle");
         }
     }
