@@ -2,6 +2,19 @@
 
 NeoForge **1.21.1** single-player companion mod with an extensible character framework. First character: **Вика**.
 
+## Скачать мод
+
+**[⬇ Скачать viktoria-0.1.0.jar](https://github.com/l7cor1s/project-victoria/raw/cursor/viktoria-companion-scaffold-3c34/dist/viktoria-0.1.0.jar)**
+
+Локально в репозитории: [`dist/viktoria-0.1.0.jar`](dist/viktoria-0.1.0.jar)
+
+Положите файл в папку `mods` вместе с:
+- NeoForge **1.21.1**
+- [GeckoLib](https://modrinth.com/mod/geckolib) 4.7+ (обязательно)
+- опционально [MCA Reborn](https://modrinth.com/mod/minecraft-comes-alive-reborn)
+
+Призыв в игре: `/viktoria summon` или `/vika spawn`
+
 ## Requirements
 
 - Minecraft 1.21.1
@@ -15,7 +28,7 @@ NeoForge **1.21.1** single-player companion mod with an extensible character fra
 ./gradlew build
 ```
 
-Jar: `build/libs/viktoria-0.1.0.jar`
+Готовый jar также копируется в `dist/viktoria-0.1.0.jar` (см. секцию **Скачать мод**). Сборка из исходников: `build/libs/viktoria-0.1.0.jar`.
 
 ## Play / test (SP)
 
