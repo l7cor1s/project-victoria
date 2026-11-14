@@ -101,7 +101,8 @@ public class CompanionEntity extends PathfinderMob implements GeoEntity {
     public void setAnimState(String state) {
         this.entityData.set(ANIM_STATE, state);
         if ("talk".equals(state)) {
-            this.talkTicks = 40;
+            // Keep talking pose for the length of a typical dialogue exchange
+            this.talkTicks = 200;
         }
     }
 

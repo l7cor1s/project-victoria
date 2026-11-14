@@ -15,7 +15,17 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Compact right-side dialogue panel (MCA-style). Leaves the world undimmed
+ * so the player can see the NPC while choosing replies.
+ */
 public class DialogueScreen extends Screen {
+    private static final int PANEL_WIDTH = 196;
+    private static final int PANEL_MARGIN = 10;
+    private static final int PANEL_PAD = 8;
+    private static final int CHOICE_H = 18;
+    private static final int CHOICE_GAP = 3;
+
     private final int entityId;
     private final String characterId;
     private String nodeId;
@@ -24,6 +34,10 @@ public class DialogueScreen extends Screen {
     private final String tier;
     private DialogueNode node;
     private final List<Button> choiceButtons = new ArrayList<>();
+    private int panelLeft;
+    private int panelTop;
+    private int panelHeight;
+    private int textBlockBottom;
 
     public DialogueScreen(int entityId, String characterId, String nodeId, int affinity, String mood, String tier) {
         super(Component.translatable("viktoria.gui.dialogue.title"));
@@ -38,26 +52,48 @@ public class DialogueScreen extends Screen {
 
     @Override
     protected void init() {
+        layoutPanel();
         rebuildChoices();
+    }
+
+    private void layoutPanel() {
+        panelLeft = this.width - PANEL_WIDTH - PANEL_MARGIN;
+        int textLines = 3;
+        if (node != null) {
+            String textKey = node.resolveTextKey(MoodType.byName(mood));
+            textLines = Math.max(2, this.font.split(Component.translatable(textKey), PANEL_WIDTH - PANEL_PAD * 2).size());
+        }
+        int choiceCount = node == null ? 0 : node.visibleChoices(affinity, MoodType.byName(mood)).size();
+        int headerH = 28;
+        int textH = textLines * 11 + 6;
+        int choicesH = choiceCount * (CHOICE_H + CHOICE_GAP) + (choiceCount > 0 ? 4 : 0);
+        panelHeight = headerH + textH + choicesH + PANEL_PAD;
+        panelTop = Math.max(PANEL_MARGIN, (this.height - panelHeight) / 2);
+        // Keep panel from going off-screen on short windows
+        if (panelTop + panelHeight > this.height - PANEL_MARGIN) {
+            panelTop = Math.max(4, this.height - PANEL_MARGIN - panelHeight);
+        }
+        textBlockBottom = panelTop + headerH + textH;
     }
 
     private void rebuildChoices() {
         clearWidgets();
         choiceButtons.clear();
+        layoutPanel();
         if (node == null) {
             return;
         }
         List<DialogueChoice> visible = node.visibleChoices(affinity, MoodType.byName(mood));
-        int panelWidth = Math.min(360, this.width - 40);
-        int x = (this.width - panelWidth) / 2;
-        int y = this.height - 28 - visible.size() * 24;
+        int btnW = PANEL_WIDTH - PANEL_PAD * 2;
+        int x = panelLeft + PANEL_PAD;
+        int y = textBlockBottom + 2;
         for (DialogueChoice choice : visible) {
             Button button = Button.builder(Component.translatable(choice.langKey()), b -> select(choice))
-                    .bounds(x, y, panelWidth, 20)
+                    .bounds(x, y, btnW, CHOICE_H)
                     .build();
             choiceButtons.add(button);
             addRenderableWidget(button);
-            y += 24;
+            y += CHOICE_H + CHOICE_GAP;
         }
     }
 
@@ -75,33 +111,40 @@ public class DialogueScreen extends Screen {
         }
     }
 
+    /** No full-screen dim — world and NPC stay fully visible. */
+    @Override
+    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        // intentionally empty
+    }
+
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(graphics, mouseX, mouseY, partialTick);
-        int panelWidth = Math.min(360, this.width - 40);
-        int panelLeft = (this.width - panelWidth) / 2;
-        int panelTop = this.height / 2 - 90;
-        int panelHeight = 100;
+        layoutPanel();
+        int left = panelLeft;
+        int top = panelTop;
+        int right = left + PANEL_WIDTH;
+        int bottom = top + panelHeight;
 
-        graphics.fill(panelLeft - 6, panelTop - 28, panelLeft + panelWidth + 6, panelTop + panelHeight + 8, 0xCC1A1218);
-        graphics.fill(panelLeft - 6, panelTop - 28, panelLeft + panelWidth + 6, panelTop - 26, 0xFFE8D5C4);
+        // Soft panel only — no world dim
+        graphics.fill(left, top, right, bottom, 0xE816141A);
+        graphics.fill(left, top, left + 2, bottom, 0xFFE8D5C4);
+        graphics.fill(left, top, right, top + 1, 0x55E8D5C4);
+        graphics.fill(left, bottom - 1, right, bottom, 0x33101014);
 
+        int tx = left + PANEL_PAD;
         graphics.drawString(this.font, Component.translatable("entity.viktoria.companion." + characterId),
-                panelLeft, panelTop - 20, 0xF5E6D8, false);
+                tx, top + 6, 0xF5E6D8, false);
         graphics.drawString(this.font, Component.translatable("viktoria.gui.affinity", affinity,
                         Component.translatable("viktoria.affinity." + tier.toLowerCase())),
-                panelLeft, panelTop - 8, 0xB8A294, false);
-        graphics.drawString(this.font, Component.translatable("viktoria.gui.mood",
-                        Component.translatable("viktoria.mood." + mood)),
-                panelLeft + panelWidth / 2, panelTop - 8, 0xB8A294, false);
+                tx, top + 17, 0x9A8A7C, false);
 
         if (node != null) {
             String textKey = node.resolveTextKey(MoodType.byName(mood));
-            List<FormattedCharSequence> lines = this.font.split(Component.translatable(textKey), panelWidth - 8);
-            int textY = panelTop + 10;
+            List<FormattedCharSequence> lines = this.font.split(Component.translatable(textKey), PANEL_WIDTH - PANEL_PAD * 2);
+            int textY = top + 30;
             for (FormattedCharSequence line : lines) {
-                graphics.drawString(this.font, line, panelLeft, textY, 0xFFF4EEE6, false);
-                textY += 12;
+                graphics.drawString(this.font, line, tx, textY, 0xFFF0E8DE, false);
+                textY += 11;
             }
         }
 
