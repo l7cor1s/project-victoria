@@ -4,9 +4,8 @@ NeoForge **1.21.1** single-player companion mod with an extensible character fra
 
 ## Скачать мод
 
-**[⬇ Скачать viktoria-0.1.0.jar](https://github.com/l7cor1s/project-victoria/raw/cursor/viktoria-companion-scaffold-3c34/dist/viktoria-0.1.0.jar)**
-
-Локально в репозитории: [`dist/viktoria-0.1.0.jar`](dist/viktoria-0.1.0.jar)
+**[⬇ Скачать viktoria-0.1.0.jar](https://github.com/l7cor1s/project-victoria/releases/download/v0.1.0/viktoria-0.1.0.jar)**  
+([страница релиза](https://github.com/l7cor1s/project-victoria/releases/tag/v0.1.0) · файл в репо: [`dist/viktoria-0.1.0.jar`](dist/viktoria-0.1.0.jar))
 
 Положите файл в папку `mods` вместе с:
 - NeoForge **1.21.1**
