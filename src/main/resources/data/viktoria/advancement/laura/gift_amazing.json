@@ -1,0 +1,23 @@
+{
+  "parent": "viktoria:laura/gift_first",
+  "display": {
+    "icon": {
+      "id": "minecraft:amethyst_shard"
+    },
+    "title": {
+      "translate": "advancements.viktoria.gift_amazing.title"
+    },
+    "description": {
+      "translate": "advancements.viktoria.gift_amazing.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "parent": "viktoria:laura/root",
+  "display": {
+    "icon": {
+      "id": "minecraft:netherrack"
+    },
+    "title": {
+      "translate": "advancements.viktoria.nether.title"
+    },
+    "description": {
+      "translate": "advancements.viktoria.nether.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

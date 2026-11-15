@@ -1,0 +1,23 @@
+{
+  "parent": "viktoria:laura/days_30",
+  "display": {
+    "icon": {
+      "id": "minecraft:golden_apple"
+    },
+    "title": {
+      "translate": "advancements.viktoria.days_100.title"
+    },
+    "description": {
+      "translate": "advancements.viktoria.days_100.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

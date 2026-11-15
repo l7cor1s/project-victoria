@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "viktoria:block/laura_grave"
+    },
+    "facing=east": {
+      "model": "viktoria:block/laura_grave",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "viktoria:block/laura_grave",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "viktoria:block/laura_grave",
+      "y": 270
+    }
+  }
+}

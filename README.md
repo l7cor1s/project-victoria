@@ -1,25 +1,7 @@
-# Viktoria (Виктория)
+# Viktoria (Вика)
 
-NeoForge **1.21.1** single-player companion mod with an extensible character framework. First character: **Вика**.
-
-## Скачать мод
-
-**[⬇ Скачать viktoria-0.1.6.jar](dist/viktoria-0.1.6.jar)**  
-([raw с ветки](https://github.com/l7cor1s/project-victoria/raw/cursor/viktoria-companion-scaffold-3c34/dist/viktoria-0.1.6.jar) · также `dist/viktoria-0.1.4.jar`)
-
-Положите файл в папку `mods` вместе с:
-- NeoForge **1.21.1**
-- [GeckoLib](https://modrinth.com/mod/geckolib) 4.7+ (обязательно)
-- опционально [MCA Reborn](https://modrinth.com/mod/minecraft-comes-alive-reborn)
-
-Призыв в игре: `/viktoria summon` или `/vika spawn`
-
-## Requirements
-
-- Minecraft 1.21.1
-- NeoForge 21.1.x
-- [GeckoLib](https://modrinth.com/mod/geckolib) 4.7+ for 1.21.1 NeoForge
-- Optional: [MCA Reborn](https://modrinth.com/mod/minecraft-comes-alive-reborn) for town appearance
+NeoForge **1.21.1** companion: office colleague **Вика**.  
+Adaptation of [My Girlfriend Laura](https://github.com/laforetbrut/mods-mc-laura) (Apache-2.0).
 
 ## Build
 
@@ -27,41 +9,19 @@ NeoForge **1.21.1** single-player companion mod with an extensible character fra
 ./gradlew build
 ```
 
-Готовый jar также копируется в `dist/viktoria-0.1.6.jar` (см. секцию **Скачать мод**). Сборка из исходников: `build/libs/viktoria-0.1.6.jar`.
+Jar: `build/libs/viktoria-neoforge-1.21.1-0.2.0.jar` (also `dist/`).
 
-## Play / test (SP)
+## Play
 
-1. Install NeoForge 1.21.1 + GeckoLib + this mod (+ MCA optional).
-2. Commands:
-   - `/viktoria summon` or `/vika spawn` — spawn Виктория
-   - Right-click — Russian dialogue GUI (mood-aware lines + gated choices)
-   - Hold flower/cake and right-click — gift (+ flower quest progress)
-   - Dialogue follow toggle or `/viktoria follow`
-   - `/viktoria affinity <0-100>` — test intimate/home gates
-   - `/viktoria home` / `/viktoria status`
-3. Quests (real objectives):
-   - Flowers: gift 3 flowers
-   - Home: claim home via dialogue (affinity ≥20 to unlock quest)
-   - Evening walk: follow at night (~400 ticks)
-4. World: rare dark-oak cottage feature; MCA towns spawn her via soft-dep hooks when MCA is installed.
+- `/vika summon` (aliases `/viktoria`, `/laura`) or **Сердце Вики**
+- Follow, menu, gifts, jobs, skins — Laura systems, rebranded
+- Default model: `pack:Vika` → `assets/viktoria/vika_models/Vika.{geo.json,animation.json,png}` (256×256)
 
-## Features
+## Character
 
-| System | Status |
-|--------|--------|
-| Character registry | Working |
-| JSON dialogue loader + RU trees | Working |
-| Affinity / mood reactions | Working |
-| Gifts / follow + **gift JSON loader** | Working |
-| Real quest objectives | Working |
-| House Feature + jigsaw/NBT cottage | Working |
-| MCA town soft-dep (building-aware) | Working (graceful without MCA) |
-| Intimate poses (gated) | Working (`intimate` / `intimate_close` / `intimate_embrace`) |
-| GeckoLib model toward reference | Layered outfit geo + 256² texture + `.bbmodel` |
+Самоуверенная стерва из офиса: сарказм, подколы, скрытый интерес. Не «милый компаньон».  
+Диалоги: `data/viktoria/dialogues/ru_ru.json`.
 
-### Intimate test
-`/viktoria summon` → `/viktoria affinity 70` → dialogue **Близость…** → consent → pose choice.
+## License
 
-## Extending
-
-Register another `CompanionCharacter`; add `data/<ns>/dialogue/<id>.json` overlays; reuse `CompanionEntity` with a new `characterId`.
+Apache-2.0. Upstream Laura © vyrriox. Adaptation © l7cor1s.

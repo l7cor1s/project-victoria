@@ -1,0 +1,1587 @@
+package com.l7cor1s.viktoria.test;
+
+import com.l7cor1s.viktoria.ViktoriaCore;
+import com.l7cor1s.viktoria.ViktoriaMod;
+import com.l7cor1s.viktoria.api.VikaAPI;
+import com.l7cor1s.viktoria.config.VikaConfig;
+import com.l7cor1s.viktoria.desire.Desire;
+import com.l7cor1s.viktoria.desire.DesireType;
+import com.l7cor1s.viktoria.dialogue.DialogueManager;
+import com.l7cor1s.viktoria.dialogue.TextMatcher;
+import com.l7cor1s.viktoria.entity.Emote;
+import com.l7cor1s.viktoria.entity.VikaEntity;
+import com.l7cor1s.viktoria.entity.VikaMode;
+import com.l7cor1s.viktoria.entity.Mood;
+import com.l7cor1s.viktoria.entity.ai.VikaMovement;
+import com.l7cor1s.viktoria.entity.brain.Needs;
+import com.l7cor1s.viktoria.entity.work.ChestPurpose;
+import com.l7cor1s.viktoria.entity.work.VikaTask;
+import com.l7cor1s.viktoria.gift.GiftTable;
+import com.l7cor1s.viktoria.model.ModelData;
+import com.l7cor1s.viktoria.model.ModelParser;
+import com.l7cor1s.viktoria.model.Molang;
+import com.l7cor1s.viktoria.network.VikaAction;
+import com.l7cor1s.viktoria.network.VikaNetwork;
+import com.l7cor1s.viktoria.platform.CookingPots;
+import com.l7cor1s.viktoria.platform.InventoryAccess;
+import com.l7cor1s.viktoria.platform.VikaInventories;
+import com.l7cor1s.viktoria.registry.VikaRegistries;
+import com.l7cor1s.viktoria.skin.AssetCache;
+import com.l7cor1s.viktoria.skin.AssetKind;
+import com.l7cor1s.viktoria.skin.ServerAssetStore;
+import com.l7cor1s.viktoria.skin.SkinService;
+import com.l7cor1s.viktoria.util.ItemSpec;
+import com.l7cor1s.viktoria.util.TextCodec;
+import com.l7cor1s.viktoria.world.VikaActions;
+import com.l7cor1s.viktoria.world.VikaAdvancements;
+import com.l7cor1s.viktoria.world.VikaChat;
+import com.l7cor1s.viktoria.world.VikaManager;
+import com.l7cor1s.viktoria.world.VikaWorldData;
+import io.netty.buffer.Unpooled;
+import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.commands.arguments.EntityAnchorArgument;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.Portal;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.portal.DimensionTransition;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Consumer;
+
+/**
+ * The self test cases: every major feature is exercised in a real world with a fake player.
+ *
+ * @author vyrriox
+ */
+public final class VikaTestCases {
+    private VikaTestCases() {
+    }
+
+    private record Case(String name, int timeoutTicks, TestBody body) implements TestRunner.TestCase {
+        @Override
+        public void run(TestRunner.Context ctx) throws Exception {
+            body.run(ctx);
+        }
+    }
+
+    @FunctionalInterface
+    private interface TestBody {
+        void run(TestRunner.Context ctx) throws Exception;
+    }
+
+    private static void add(List<TestRunner.TestCase> tests, String name, int timeoutTicks, TestBody body) {
+        tests.add(new Case(name, timeoutTicks, body));
+    }
+
+    public static void register(List<TestRunner.TestCase> tests) {
+        // ------------------------------------------------------------------ content and data
+        add(tests, "registries", 100, ctx -> {
+            ctx.check(VikaRegistries.LAURA.get() != null, "entity type missing");
+            ctx.check(VikaRegistries.HEART.get() != null && VikaRegistries.GRAVE.get() != null, "items or blocks missing");
+            for (VikaRegistries.Sound sound : VikaRegistries.Sound.values()) {
+                ctx.check(sound.get() != null, "sound " + sound.id() + " missing");
+            }
+            ctx.check(ctx.server().getRecipeManager().byKey(ViktoriaMod.id("laura_heart")).isPresent(), "heart recipe missing");
+            ctx.check(ctx.server().getRecipeManager().byKey(ViktoriaMod.id("laura_grave")).isPresent(), "grave recipe missing");
+            ctx.check(ctx.server().getAdvancements().get(ViktoriaMod.id("laura/root")) != null, "advancements missing");
+            ctx.succeed();
+        });
+        add(tests, "dialogues_loaded", 100, ctx -> {
+            ctx.check(DialogueManager.languages().contains("en_us"), "English dialogues missing");
+            ctx.check(DialogueManager.languages().contains("fr_fr"), "French dialogues missing");
+            for (String lang : DialogueManager.languages()) {
+                ctx.check(DialogueManager.sets().get(lang).lines("summon").size() > 0, lang + " has no summon line");
+            }
+            for (String lang : new String[]{"en_us", "fr_fr"}) {
+                try (InputStream in = ViktoriaMod.class.getResourceAsStream("/assets/viktoria/lang/" + lang + ".json")) {
+                    ctx.check(in != null, "lang file " + lang + " missing");
+                }
+            }
+            ctx.succeed();
+        });
+        add(tests, "chat_matching", 100, ctx -> {
+            ctx.check(intent("follow me").equals("follow"), "follow me");
+            ctx.check(intent("suis-moi").equals("follow"), "suis-moi");
+            ctx.check(intent("Laura je t'aime !").equals("love_you"), "je t'aime");
+            ctx.check(intent("I feel lonely").equals("summon"), "summon en");
+            ctx.check(intent("je me sens seul").equals("summon"), "summon fr");
+            ctx.check(intent("ÉPOUSE-MOI").equals("marry_me"), "accents and case");
+            ctx.check(DialogueManager.match("the weather is nice today, let us talk about stuff") == null
+                    || !DialogueManager.match("the weather is nice today, let us talk about stuff").intent().equals("summon"), "false summon");
+            List<String> items = DialogueManager.matchItems(TextMatcher.Prepared.of("bring me some bread please"));
+            ctx.check(!items.isEmpty() && items.get(0).equals("minecraft:bread"), "bread keyword: " + items);
+            List<String> itemsFr = DialogueManager.matchItems(TextMatcher.Prepared.of("apporte-moi des pommes"));
+            ctx.check(!itemsFr.isEmpty() && itemsFr.get(0).equals("minecraft:apple"), "pommes keyword: " + itemsFr);
+            ctx.check(!intent("I have 3 apples").equals("love_you"), "a number fired love_you");
+            DialogueManager.IntentMatch frenchDans = DialogueManager.match("je suis dans la maison", "fr_fr");
+            ctx.check(frenchDans == null || !frenchDans.intent().equals("emote_dance"), "French word taken for a Dutch order");
+            ctx.check(DialogueManager.match("follow me", "fr_fr") != null, "English is always understood");
+            ctx.check(DialogueManager.splitOrders("cut a tree then come here").size() == 2, "connector then");
+            ctx.check(DialogueManager.splitOrders("coupe un arbre puis viens ici").size() == 2, "connector puis");
+            ctx.succeed();
+        });
+        // Frequent mistakes, chat shortcuts and filler words, per language.
+        add(tests, "chat_spelling", 100, ctx -> {
+            String[][] cases = {
+                    {"fr_fr", "tu est jolie", "beautiful"}, {"fr_fr", "tes trop belle laura", "beautiful"},
+                    {"fr_fr", "t'es vraiment mignone", "beautiful"}, {"fr_fr", "jtm", "love_you"}, {"fr_fr", "jtaime fort", "love_you"},
+                    {"fr_fr", "slt", "hello"}, {"fr_fr", "sa va ?", "how_are_you"}, {"fr_fr", "tg", "insult"}, {"fr_fr", "Salope", "insult"},
+                    {"en_us", "ur so pretty", "beautiful"}, {"en_us", "ily", "love_you"}, {"en_us", "how r u", "how_are_you"},
+                    {"en_us", "thx", "thanks"}};
+            for (String[] c : cases) {
+                DialogueManager.IntentMatch m = DialogueManager.match(c[1], c[0]);
+                ctx.check(m != null && m.intent().equals(c[2]), "\"" + c[1] + "\" gave " + (m == null ? "nothing" : m.intent()));
+            }
+            // Triggers that contain a filler word still match as typed.
+            DialogueManager.IntentMatch typed = DialogueManager.match("trop mignonne", "fr_fr");
+            ctx.check(typed != null && typed.intent().equals("beautiful"), "trigger with a filler word");
+            ctx.succeed();
+        });
+        add(tests, "config_reload", 200, ctx -> {
+            ViktoriaMod.reloadAll();
+            ctx.check(DialogueManager.languages().size() >= 2, "dialogues lost after reload");
+            ctx.succeed();
+        });
+
+        // ------------------------------------------------------------------ summoning
+        add(tests, "summon_command", 200, ctx -> withLaura(ctx, laura -> {
+            ctx.check(laura.isOwnedBy(ctx.player()), "not owned by the summoner");
+            ctx.check(laura.getLauraName().equals(VikaConfig.defaultName.get()), "default name");
+            ctx.succeed();
+        }));
+        add(tests, "summon_chat_french", 200, ctx -> {
+            ServerPlayer player = ctx.player();
+            MockPlayers.setLanguage(player, "fr_fr");
+            VikaChat.onChat(player, "je me sens seule...");
+            ctx.waitFor("a companion", 100, () -> !VikaManager.findAll(player).isEmpty(), ctx::succeed);
+        });
+        add(tests, "several_companions", 200, ctx -> {
+            ServerPlayer player = ctx.player();
+            VikaManager.summon(player, false);
+            resetCooldown(ctx);
+            VikaManager.summon(player, false);
+            ctx.waitFor("two companions", 100, () -> VikaManager.findAll(player).size() == 2, () -> {
+                List<VikaEntity> all = VikaManager.findAll(player);
+                ctx.check(!all.get(0).getLauraName().equals(all.get(1).getLauraName()), "both have the same name");
+                ctx.succeed();
+            });
+        });
+        add(tests, "rename", 200, ctx -> withLaura(ctx, laura -> {
+            VikaActions.perform(ctx.player(), laura, VikaAction.RENAME, "Emma", VikaActions.Source.MENU);
+            ctx.check(laura.getLauraName().equals("Emma"), "name is " + laura.getLauraName());
+            ctx.succeed();
+        }));
+
+        // ------------------------------------------------------------------ orders and movement
+        add(tests, "stay_and_follow", 600, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            VikaActions.perform(player, laura, VikaAction.STAY, "", VikaActions.Source.COMMAND);
+            ctx.check(laura.getMode() == VikaMode.STAY, "mode is " + laura.getMode());
+            BlockPos start = laura.blockPosition();
+            player.teleportTo(ctx.origin.getX() + 12.5, ctx.origin.getY(), ctx.origin.getZ() + 0.5);
+            ctx.after(60, () -> {
+                ctx.check(laura.blockPosition().distSqr(start) < 4, "she moved while staying");
+                VikaActions.perform(player, laura, VikaAction.FOLLOW, "", VikaActions.Source.COMMAND);
+                ctx.waitFor("her to follow", 300, () -> laura.distanceTo(player) < 6, ctx::succeed);
+            });
+        }));
+        // Under teleportDistance (128 by default) she must walk the whole way, never blink to the player.
+        add(tests, "follow_walks", 400, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            player.teleportTo(ctx.origin.getX() + 18.5, ctx.origin.getY(), ctx.origin.getZ() + 18.5);
+            Vec3[] last = {laura.position()};
+            ctx.waitFor("her to walk to the player", 300, () -> {
+                double step = laura.position().distanceTo(last[0]);
+                last[0] = laura.position();
+                ctx.check(step < 3, "she jumped " + Math.round(step) + " blocks in one tick");
+                return laura.distanceTo(player) < 8;
+            }, ctx::succeed);
+        }));
+        // The threshold is a config value: lowered under the distance, she teleports instead of walking.
+        add(tests, "follow_teleport", 200, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            double old = VikaConfig.teleportDistance.getDouble();
+            VikaConfig.teleportDistance.set(12.0);
+            ctx.onCleanup(() -> VikaConfig.teleportDistance.set(old));
+            player.teleportTo(ctx.origin.getX() + 18.5, ctx.origin.getY(), ctx.origin.getZ() + 18.5);
+            Vec3[] last = {laura.position()};
+            ctx.waitFor("her to teleport", 100, () -> {
+                double step = laura.position().distanceTo(last[0]);
+                last[0] = laura.position();
+                return step > 5 && laura.distanceTo(player) < 8;
+            }, ctx::succeed);
+        }));
+        add(tests, "proximity_chat", 300, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            VikaActions.perform(player, laura, VikaAction.STAY, "", VikaActions.Source.COMMAND);
+            double range = VikaConfig.chatRange.getInt();
+            player.teleportTo(laura.getX() + range + 20, laura.getY() + 30, laura.getZ());
+            VikaChat.onChat(player, "follow me");
+            ctx.after(10, () -> {
+                ctx.check(laura.getMode() == VikaMode.STAY, "she heard from too far away");
+                player.teleportTo(laura.getX() + 3, laura.getY(), laura.getZ());
+                VikaChat.onChat(player, "follow me");
+                ctx.after(10, () -> {
+                    ctx.check(laura.getMode() == VikaMode.FOLLOW, "she did not hear from close by");
+                    ctx.succeed();
+                });
+            });
+        }));
+        add(tests, "emote", 200, ctx -> withLaura(ctx, laura -> {
+            VikaActions.perform(ctx.player(), laura, VikaAction.EMOTE, "CLAP", VikaActions.Source.MENU);
+            ctx.check(laura.getEmote() == Emote.CLAP, "emote is " + laura.getEmote());
+            ctx.check(VikaAdvancements.get(ctx.player(), "emote.clap") == 1, "emote counter");
+            ctx.succeed();
+        }));
+
+        // ------------------------------------------------------------------ affection and vanilla advancements
+        add(tests, "hug_advancement", 200, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            revoke(ctx, "first_hug");
+            VikaActions.perform(player, laura, VikaAction.HUG, "", VikaActions.Source.MENU);
+            ctx.check(laura.getEmote() == Emote.HUG, "she did not hug back: " + laura.getEmote());
+            ctx.check(VikaAdvancements.get(player, "hugs") == 1, "hug counter");
+            ctx.check(done(ctx, "first_hug"), "the vanilla hug advancement is not done");
+            ctx.succeed();
+        }));
+        add(tests, "kiss_advancement", 200, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            revoke(ctx, "first_kiss");
+            laura.setAffection(500);
+            VikaActions.perform(player, laura, VikaAction.KISS, "", VikaActions.Source.MENU);
+            ctx.check(laura.getEmote() == Emote.KISS, "she did not kiss back: " + laura.getEmote());
+            ctx.check(VikaAdvancements.get(player, "kisses") == 1, "kiss counter");
+            ctx.check(done(ctx, "first_kiss"), "the vanilla kiss advancement is not done");
+            ctx.succeed();
+        }));
+        // The hug and the kiss of the emote wheel (and of /laura emote) are the real ones, whatever her mood.
+        add(tests, "hug_from_emote_wheel", 200, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            VikaConfig.Annoyance old = VikaConfig.annoyance.get();
+            VikaConfig.annoyance.set(VikaConfig.Annoyance.UNBEARABLE);
+            ctx.onCleanup(() -> VikaConfig.annoyance.set(old));
+            revoke(ctx, "first_hug");
+            revoke(ctx, "first_kiss");
+            for (int i = 0; i < 20; i++) {
+                laura.setMood(Mood.SAD);
+                VikaActions.perform(player, laura, VikaAction.EMOTE, Emote.HUG.name(), VikaActions.Source.MENU);
+                ctx.check(VikaAdvancements.get(player, "hugs") == i + 1, "the hug of the emote wheel did not count as a hug");
+            }
+            ctx.check(laura.getEmote() == Emote.HUG, "she did not hug back: " + laura.getEmote());
+            ctx.check(done(ctx, "first_hug"), "the vanilla hug advancement is not done");
+            laura.setAffection(500);
+            ctx.server().getCommands().performPrefixedCommand(player.createCommandSourceStack(), "laura emote kiss");
+            ctx.check(VikaAdvancements.get(player, "kisses") == 1 && laura.getEmote() == Emote.KISS, "the kiss asked for as an emote did not count as a kiss");
+            ctx.check(done(ctx, "first_kiss"), "the vanilla kiss advancement is not done");
+            // Still emotes she played: the "every emote" advancement needs them.
+            ctx.check(VikaAdvancements.get(player, "emote.hug") == 20 && VikaAdvancements.get(player, "emote.kiss") == 1, "the hug and the kiss no longer count as emotes");
+            ctx.succeed();
+        }));
+        // A hug comforts her: hunger, sadness or jealousy never refuse it, even at the most demanding
+        // setting. Only a grudge does, and asking again gets through.
+        add(tests, "hug_comforts", 200, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            VikaConfig.Annoyance old = VikaConfig.annoyance.get();
+            VikaConfig.annoyance.set(VikaConfig.Annoyance.UNBEARABLE);
+            ctx.onCleanup(() -> VikaConfig.annoyance.set(old));
+            ctx.check(VikaConfig.refuseOrders.get(), "refuseOrders is off, the test proves nothing");
+            int hugs = 0;
+            for (Mood mood : new Mood[]{Mood.HUNGRY, Mood.SAD, Mood.JEALOUS}) {
+                for (int i = 0; i < 20; i++) {
+                    laura.setMood(mood);
+                    VikaActions.perform(player, laura, VikaAction.HUG, "", VikaActions.Source.MENU);
+                    hugs++;
+                    ctx.check(VikaAdvancements.get(player, "hugs") == hugs, "she refused a hug because she is " + mood.key());
+                }
+            }
+            // Affection is high enough, so only the mood could refuse the kiss.
+            laura.setAffection(500);
+            for (int i = 0; i < 20; i++) {
+                laura.setMood(Mood.SAD);
+                VikaActions.perform(player, laura, VikaAction.KISS, "", VikaActions.Source.MENU);
+                ctx.check(VikaAdvancements.get(player, "kisses") == i + 1, "she refused a kiss because she is sad");
+            }
+            ctx.check(!heard(ctx, "hug.refused") && !heard(ctx, "kiss.refused"), "she said no to a hug or a kiss");
+            laura.brain().startSulking(20 * 60);
+            VikaActions.perform(player, laura, VikaAction.HUG, "", VikaActions.Source.MENU);
+            ctx.check(VikaAdvancements.get(player, "hugs") == hugs && heard(ctx, "hug.refused"), "a sulking Laura took the first hug");
+            VikaActions.perform(player, laura, VikaAction.HUG, "", VikaActions.Source.MENU);
+            ctx.check(VikaAdvancements.get(player, "hugs") == hugs + 1, "asking again did not get the hug");
+            VikaActions.perform(player, laura, VikaAction.KISS, "", VikaActions.Source.MENU);
+            VikaActions.perform(player, laura, VikaAction.KISS, "", VikaActions.Source.MENU);
+            ctx.check(VikaAdvancements.get(player, "kisses") == 20, "a sulking Laura accepted a kiss");
+            ctx.succeed();
+        }));
+
+        // ------------------------------------------------------------------ bath
+        add(tests, "bath_water_bucket", 200, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            revoke(ctx, "bath");
+            laura.brain().needs().set(Needs.Need.HYGIENE, 20);
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.WATER_BUCKET));
+            laura.mobInteract(player, InteractionHand.MAIN_HAND);
+            ctx.check(laura.brain().needs().get(Needs.Need.HYGIENE) >= 70, "hygiene is " + laura.brain().needs().get(Needs.Need.HYGIENE));
+            ctx.check(player.getMainHandItem().is(Items.BUCKET), "the bucket did not come back empty: " + player.getMainHandItem());
+            ctx.check(heard(ctx, "need.hygiene.clean"), "she did not say she is clean");
+            ctx.check(done(ctx, "bath"), "the vanilla bath advancement is not done");
+            ctx.succeed();
+        }));
+        // Led or pushed into water by her partner: she is not dirty enough to go by herself.
+        add(tests, "bath_in_water", 700, ctx -> withLaura(ctx, laura -> {
+            revoke(ctx, "bath");
+            BlockPos pool = ctx.origin.offset(4, -1, 0);
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    ctx.level.setBlockAndUpdate(pool.offset(dx, -1, dz), Blocks.SMOOTH_STONE.defaultBlockState());
+                    ctx.level.setBlockAndUpdate(pool.offset(dx, 0, dz), Blocks.WATER.defaultBlockState());
+                }
+            }
+            laura.brain().needs().set(Needs.Need.HYGIENE, 60);
+            laura.setMode(VikaMode.STAY);
+            laura.moveTo(pool.getX() + 0.5, pool.getY(), pool.getZ() + 0.5, 0, 0);
+            ctx.waitFor("the bath advancement", 300, () -> done(ctx, "bath"), () -> {
+                ctx.check(laura.brain().needs().get(Needs.Need.HYGIENE) > 60, "the water did not wash her");
+                ctx.check(heardTimes(ctx, "need.hygiene.clean") == 1, "she said she is clean " + heardTimes(ctx, "need.hygiene.clean") + " times");
+                // Out and in again, as when she swims behind her partner: she does not say it at every swim.
+                laura.moveTo(ctx.origin.getX() + 0.5, ctx.origin.getY(), ctx.origin.getZ() - 4.5, 0, 0);
+                ctx.after(50, () -> {
+                    ctx.check(!laura.isInWater(), "she is still in the water");
+                    laura.brain().needs().set(Needs.Need.HYGIENE, 60);
+                    laura.moveTo(pool.getX() + 0.5, pool.getY(), pool.getZ() + 0.5, 0, 0);
+                    ctx.waitFor("the second bath", 300, () -> laura.brain().needs().get(Needs.Need.HYGIENE) >= 85, () -> {
+                        ctx.check(heardTimes(ctx, "need.hygiene.clean") == 1, "she said she is clean again after the second swim");
+                        ctx.succeed();
+                    });
+                });
+            });
+        }));
+
+        // ------------------------------------------------------------------ teleports and dimensions
+        // The partner flies: she lands on the ground under him. No ground at all: she stays where she is.
+        add(tests, "teleport_safe_spot", 300, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            laura.moveTo(ctx.origin.getX() - 14.5, ctx.origin.getY(), ctx.origin.getZ() - 14.5, 0, 0);
+            player.teleportTo(ctx.origin.getX() + 12.5, ctx.origin.getY() + 40, ctx.origin.getZ() + 12.5);
+            ctx.check(VikaManager.teleport(laura, ctx.level, player.blockPosition()) == laura, "she did not come under her partner");
+            ctx.check(standsSafely(laura), "she was left in the air at " + laura.blockPosition());
+            ctx.check(Math.abs(laura.getX() - player.getX()) < 8 && Math.abs(laura.getZ() - player.getZ()) < 8, "she is not under her partner: " + laura.blockPosition());
+            Vec3 before = laura.position();
+            ServerLevel end = ctx.server().getLevel(Level.END);
+            ctx.check(end != null, "the test server has no End");
+            // Between the main island and the outer ones (1000 blocks out) there is nothing but void.
+            BlockPos nowhere = new BlockPos(500, 80, -300);
+            ctx.check(VikaManager.teleport(laura, end, nowhere) == null, "a place to stand was found in the void");
+            ctx.check(!laura.isRemoved() && laura.level() == ctx.level && laura.position().equals(before), "she was sent into the void");
+            // An explicit call from there: she says she cannot come, and stays.
+            player.changeDimension(new DimensionTransition(end, Vec3.atBottomCenterOf(nowhere), Vec3.ZERO, 0, 0, DimensionTransition.DO_NOTHING));
+            ctx.server().getCommands().performPrefixedCommand(player.createCommandSourceStack(), "laura come");
+            ctx.check(heard(ctx, "stuck"), "she did not say she cannot come");
+            ctx.check(!laura.isRemoved() && laura.level() == ctx.level, "she was sent into the void by a call");
+            ctx.check(copies(ctx).size() == 1, copies(ctx).size() + " companions exist");
+            ctx.succeed();
+        }));
+        // Summoned by a partner who is in the air: she appears on the ground, not next to him in the sky.
+        add(tests, "summon_while_flying", 200, ctx -> {
+            ctx.player().teleportTo(ctx.origin.getX() + 0.5, ctx.origin.getY() + 40, ctx.origin.getZ() + 0.5);
+            withLaura(ctx, laura -> {
+                ctx.check(standsSafely(laura) && laura.blockPosition().getY() == ctx.origin.getY(), "she was summoned in the air at " + laura.blockPosition());
+                ctx.succeed();
+            });
+        });
+        // Summoned over the void: nothing is created, the player is told why and may call again at once.
+        add(tests, "summon_over_void", 300, ctx -> {
+            ServerPlayer player = ctx.player();
+            ServerLevel end = ctx.server().getLevel(Level.END);
+            ctx.check(end != null, "the test server has no End");
+            VikaWorldData data = VikaWorldData.get(ctx.server());
+            data.meta(player.getUUID()).lastSummon = 0;
+            player.changeDimension(new DimensionTransition(end, Vec3.atBottomCenterOf(new BlockPos(500, 80, -300)), Vec3.ZERO, 0, 0, DimensionTransition.DO_NOTHING));
+            VikaManager.summon(player, false);
+            ctx.check(copies(ctx).isEmpty() && data.byOwner(player.getUUID()).isEmpty(), "a companion was created over the void");
+            ctx.check(MockPlayers.heard(player).stream().anyMatch(m -> m.contains("viktoria.summon.no_room") || m.contains("no safe place")), "the player was not told why she does not come");
+            ctx.check(data.meta(player.getUUID()).lastSummon == 0, "the refused summon started the cooldown");
+            player.changeDimension(new DimensionTransition(ctx.level, Vec3.atBottomCenterOf(ctx.origin), Vec3.ZERO, 0, 0, DimensionTransition.DO_NOTHING));
+            VikaManager.summon(player, false);
+            ctx.waitFor("the summon on solid ground", 100, () -> !VikaManager.findAll(player).isEmpty(), () -> {
+                ctx.check(standsSafely(VikaManager.findAll(player).get(0)), "she does not stand on the ground");
+                ctx.succeed();
+            });
+        });
+        add(tests, "teleport_updates_record", 600, ctx -> {
+            ServerLevel nether = nether(ctx);
+            swept(ctx, nether, NETHER_FLOOR, () -> withLaura(ctx, laura -> {
+                BlockPos there = floor(nether, NETHER_FLOOR);
+                // Nobody is there to keep the place loaded while she is looked at.
+                ChunkPos chunk = new ChunkPos(there);
+                nether.setChunkForced(chunk.x, chunk.z, true);
+                ctx.onCleanup(() -> nether.setChunkForced(chunk.x, chunk.z, false));
+                UUID id = laura.getUUID();
+                VikaEntity moved = VikaManager.teleport(laura, nether, there);
+                ctx.check(moved != null && moved != laura && moved.level() == nether && moved.getUUID().equals(id), "the teleport did not return her new entity");
+                // In the same tick: nothing may act on an old position.
+                VikaWorldData.Record record = VikaWorldData.get(ctx.server()).get(id);
+                ctx.check(record.dimension == Level.NETHER, "the record still says " + record.dimension.location());
+                ctx.check(record.pos.equals(moved.blockPosition()), "the record says " + record.pos + ", she is at " + moved.blockPosition());
+                ctx.check(laura.isRemoved() && ctx.level.getEntity(id) == null, "the old body is still in the overworld");
+                ctx.check(standsSafely(moved) && moved.blockPosition().distSqr(there) < 64, "she is not standing on the floor: " + moved.blockPosition());
+                // She usually lands next to the portal her partner came through: it must not take her back at once.
+                ctx.check(moved.isOnPortalCooldown(), "she arrived without a portal cooldown");
+                // Nobody keeps the place loaded but one forced chunk: a Nether that is still being generated shows her late.
+                ctx.waitFor("her to appear in the Nether", 300, () -> nether.getEntity(id) == moved, () -> {
+                    ctx.check(copies(ctx).size() == 1, copies(ctx).size() + " companions exist");
+                    ctx.succeed();
+                });
+            }));
+        });
+        // The vanilla command sends her to another dimension without the mod being asked.
+        add(tests, "tp_command_across_dimensions", 800, ctx -> {
+            ServerLevel nether = nether(ctx);
+            swept(ctx, nether, NETHER_FLOOR, () -> withLaura(ctx, laura -> {
+                BlockPos there = floor(nether, NETHER_FLOOR);
+                ChunkPos chunk = new ChunkPos(there);
+                nether.setChunkForced(chunk.x, chunk.z, true);
+                ctx.onCleanup(() -> nether.setChunkForced(chunk.x, chunk.z, false));
+                UUID id = laura.getUUID();
+                ctx.server().getCommands().performPrefixedCommand(ctx.server().createCommandSourceStack(),
+                        "execute in minecraft:the_nether run tp " + id + " " + (there.getX() + 0.5) + " " + there.getY() + " " + (there.getZ() + 0.5));
+                VikaWorldData.Record record = VikaWorldData.get(ctx.server()).get(id);
+                ctx.check(laura.isRemoved(), "the command did not move her");
+                ctx.check(record.dimension == Level.NETHER && record.pos.equals(there), "the record says " + record.pos + " in " + record.dimension.location());
+                ctx.waitFor("her to appear in the Nether", 300, () -> nether.getEntity(id) instanceof VikaEntity, () -> {
+                    ctx.check(copies(ctx).size() == 1, copies(ctx).size() + " companions exist");
+                    // A second her with the same identity (what a wrong restore would leave): one of them goes.
+                    VikaEntity twin = VikaRegistries.LAURA.get().create(ctx.level);
+                    ctx.check(twin != null, "could not create a copy");
+                    twin.load(nether.getEntity(id).saveWithoutId(new CompoundTag()));
+                    twin.moveTo(ctx.origin.getX() + 2.5, ctx.origin.getY(), ctx.origin.getZ() + 0.5, 0, 0);
+                    ctx.check(ctx.level.addFreshEntity(twin), "could not add the copy");
+                    // Called to where the copy is, the real one stays: the game would not let her in and she would be lost.
+                    VikaEntity real = (VikaEntity) nether.getEntity(id);
+                    ctx.check(VikaManager.teleport(real, ctx.level, ctx.origin) == null && !real.isRemoved(), "she was sent to where a second her already is");
+                    ctx.waitFor("the copy to be removed", 200, () -> copies(ctx).size() == 1, () -> {
+                        ctx.check(twin.isRemoved() && nether.getEntity(id) instanceof VikaEntity, "the wrong one was kept");
+                        ctx.after(25, () -> {
+                            ctx.check(record.dimension == Level.NETHER, "the record points to the copy that was removed");
+                            ctx.succeed();
+                        });
+                    });
+                });
+            }));
+        });
+        // The player takes a portal while she follows, in a world where only he keeps the chunks loaded.
+        add(tests, "nether_follows_player", 600, ctx -> {
+            ServerLevel nether = nether(ctx);
+            swept(ctx, nether, NETHER_FLOOR, () -> withLaura(ctx, laura -> together(ctx, () -> {
+                ServerPlayer player = ctx.player();
+                revoke(ctx, "nether");
+                BlockPos there = floor(nether, NETHER_FLOOR);
+                unforce(ctx);
+                UUID id = laura.getUUID();
+                // What a portal does to the player once it knows where it leads.
+                player.changeDimension(new DimensionTransition(nether, Vec3.atBottomCenterOf(there), Vec3.ZERO, player.getYRot(), player.getXRot(), DimensionTransition.DO_NOTHING));
+                ctx.check(player.level() == nether, "the player did not change dimension");
+                ctx.check(VikaWorldData.get(ctx.server()).get(id).dimension == Level.NETHER, "she did not leave with him: her record is not in the Nether");
+                ctx.waitFor("her next to the player in the Nether", 100, () -> nether.getEntity(id) instanceof VikaEntity l && l.distanceTo(player) < 16, () -> {
+                    VikaEntity moved = (VikaEntity) nether.getEntity(id);
+                    ctx.check(standsSafely(moved), "she is not standing on the floor: " + moved.blockPosition());
+                    ctx.check(copies(ctx).size() == 1, copies(ctx).size() + " companions exist");
+                    ctx.waitFor("the Nether advancement", 100, () -> done(ctx, "nether"), () -> {
+                        ctx.check(heard(ctx, "dimension.nether"), "she said nothing about the Nether");
+                        // And straight back, sooner than she would wait for him on the far side of a portal.
+                        player.changeDimension(new DimensionTransition(ctx.level, Vec3.atBottomCenterOf(ctx.origin), Vec3.ZERO, player.getYRot(), player.getXRot(), DimensionTransition.DO_NOTHING));
+                        ctx.check(VikaWorldData.get(ctx.server()).get(id).dimension == Level.OVERWORLD, "she did not come back with him: her record is not in the overworld");
+                        ctx.waitFor("her next to the player in the overworld", 100, () -> ctx.level.getEntity(id) instanceof VikaEntity l && l.distanceTo(player) < 16, () -> {
+                            ctx.check(copies(ctx).size() == 1, copies(ctx).size() + " companions exist");
+                            ctx.waitFor("her line about the overworld", 100, () -> heard(ctx, "dimension.overworld"), ctx::succeed);
+                        });
+                    });
+                });
+            })));
+        });
+        // She walks into a lit portal before her partner: she waits for him on the other side.
+        add(tests, "nether_portal_herself", 900, ctx -> {
+            ServerLevel nether = nether(ctx);
+            // Where the portal will come out, generated ahead: a new Nether takes seconds to appear.
+            BlockPos exit = new BlockPos(Math.floorDiv(ctx.origin.getX(), 8), 64, Math.floorDiv(ctx.origin.getZ(), 8));
+            swept(ctx, nether, exit, true, () -> withLaura(ctx, laura -> together(ctx, () -> {
+                ServerPlayer player = ctx.player();
+                revoke(ctx, "nether");
+                BlockPos frame = ctx.origin.offset(5, 0, 0);
+                for (int x = 0; x < 4; x++) {
+                    for (int y = 0; y < 5; y++) {
+                        if (x == 0 || x == 3 || y == 0 || y == 4) {
+                            ctx.level.setBlockAndUpdate(frame.offset(x, y, 0), Blocks.OBSIDIAN.defaultBlockState());
+                        }
+                    }
+                }
+                BlockPos inside = frame.offset(1, 1, 0);
+                // Fire in the frame lights it, like flint and steel.
+                ctx.level.setBlockAndUpdate(inside, Blocks.FIRE.defaultBlockState());
+                ctx.check(ctx.level.getBlockState(inside).is(Blocks.NETHER_PORTAL), "the portal did not light");
+                ctx.check(!VikaMovement.canStandAt(laura, inside), "a teleport may put her inside a portal");
+                UUID id = laura.getUUID();
+                // With followAcrossDimensions off the portal does not take her (she sits in it, so as not to walk out).
+                boolean across = VikaConfig.followAcrossDimensions.get();
+                VikaConfig.followAcrossDimensions.set(false);
+                ctx.onCleanup(() -> VikaConfig.followAcrossDimensions.set(across));
+                laura.setMode(VikaMode.STAY);
+                laura.moveTo(inside.getX() + 0.5, inside.getY(), inside.getZ() + 0.5, 0, 0);
+                ctx.after(40, () -> {
+                    ctx.check(!laura.isRemoved() && ctx.level.getBlockState(laura.blockPosition()).is(Blocks.NETHER_PORTAL), "she took the portal although followAcrossDimensions is off");
+                    VikaConfig.followAcrossDimensions.set(true);
+                    laura.setMode(VikaMode.FOLLOW);
+                    // The portal she stood in left her its cooldown.
+                    laura.setPortalCooldown(0);
+                    ctx.waitFor("her to go through the portal", 100, laura::isRemoved, () -> {
+                        // In the tick she left, before she is even visible on the other side.
+                        VikaWorldData.Record record = VikaWorldData.get(ctx.server()).get(id);
+                        ctx.check(record.dimension == Level.NETHER, "the record still says " + record.dimension.location());
+                        ctx.check(copies(ctx).size() <= 1, copies(ctx).size() + " companions exist");
+                        // Longer than the left behind check: she must not be pulled back while he stands in the portal.
+                        ctx.after(90, () -> {
+                            ctx.check(ctx.level.getEntity(id) == null && record.dimension == Level.NETHER, "she did not wait for her partner in the Nether");
+                            ctx.check(!done(ctx, "nether"), "the advancement came before her partner");
+                            DimensionTransition transition = ((Portal) Blocks.NETHER_PORTAL).getPortalDestination(ctx.level, player, inside);
+                            ctx.check(transition != null && transition.newLevel() == nether, "the portal leads nowhere");
+                            player.changeDimension(transition);
+                            ctx.waitFor("the Nether advancement", 400, () -> done(ctx, "nether"), () -> {
+                                ctx.check(nether.getEntity(id) instanceof VikaEntity l && l.distanceTo(player) < 16, "she is not next to her partner");
+                                ctx.check(copies(ctx).size() == 1, copies(ctx).size() + " companions exist");
+                                ctx.check(heard(ctx, "dimension.nether"), "she said nothing about the Nether");
+                                ctx.succeed();
+                            });
+                        });
+                    });
+                });
+            })));
+        });
+        // A player who is not an operator calls her from the Nether while she waits, loaded, in the overworld.
+        add(tests, "come_across_dimensions", 600, ctx -> {
+            ServerLevel nether = nether(ctx);
+            swept(ctx, nether, NETHER_FLOOR, () -> withLaura(ctx, laura -> together(ctx, () -> {
+                ServerPlayer player = ctx.player();
+                revoke(ctx, "nether");
+                BlockPos there = floor(nether, NETHER_FLOOR);
+                UUID id = laura.getUUID();
+                VikaActions.perform(player, laura, VikaAction.STAY, "", VikaActions.Source.COMMAND);
+                laura.setHome(ctx.origin, Level.OVERWORLD);
+                player.changeDimension(new DimensionTransition(nether, Vec3.atBottomCenterOf(there), Vec3.ZERO, player.getYRot(), player.getXRot(), DimensionTransition.DO_NOTHING));
+                ctx.after(50, () -> {
+                    ctx.check(ctx.level.getEntity(id) == laura, "she did not stay behind: she is " + (laura.isRemoved() ? "gone" : "hidden"));
+                    ctx.check(laura.getMode() == VikaMode.STAY, "she did not stay behind: mode is " + laura.getMode());
+                    ctx.check(!done(ctx, "nether"), "the Nether advancement came without her");
+                    ctx.check(!player.hasPermissions(2), "the test player is an operator");
+                    // Her home is where she is: she only has to hear the order, and he her answer.
+                    ctx.server().getCommands().performPrefixedCommand(player.createCommandSourceStack(), "laura home");
+                    ctx.check(laura.getMode() == VikaMode.HOME, "/laura home did nothing from another dimension: mode is " + laura.getMode());
+                    ctx.check(heard(ctx, "home.go"), "her partner did not hear her answer to /laura home");
+                    ctx.server().getCommands().performPrefixedCommand(player.createCommandSourceStack(), "laura come");
+                    ctx.waitFor("her next to the player in the Nether", 100, () -> nether.getEntity(id) instanceof VikaEntity l && l.distanceTo(player) < 16, () -> {
+                        VikaEntity moved = (VikaEntity) nether.getEntity(id);
+                        ctx.check(moved.getMode() == VikaMode.FOLLOW, "mode is " + moved.getMode());
+                        ctx.check(heard(ctx, "order.come"), "her partner did not hear her answer");
+                        ctx.check(copies(ctx).size() == 1, copies(ctx).size() + " companions exist");
+                        ctx.check(VikaWorldData.get(ctx.server()).get(id).dimension == Level.NETHER, "the record is not in the Nether");
+                        ctx.waitFor("the Nether advancement", 100, () -> done(ctx, "nether"), () -> {
+                            ctx.check(heard(ctx, "dimension.nether"), "she said nothing about the Nether");
+                            ctx.succeed();
+                        });
+                    });
+                });
+            })));
+        });
+        add(tests, "end_follows_player", 600, ctx -> {
+            narrowView(ctx);
+            ServerLevel end = ctx.server().getLevel(Level.END);
+            ctx.check(end != null, "the test server has no End");
+            // Far from the main island, so the dragon fight stays asleep.
+            BlockPos place = new BlockPos(500, 80, 64);
+            swept(ctx, end, place, () -> withLaura(ctx, laura -> together(ctx, () -> {
+                ServerPlayer player = ctx.player();
+                revoke(ctx, "end");
+                BlockPos there = floor(end, place);
+                unforce(ctx);
+                UUID id = laura.getUUID();
+                player.changeDimension(new DimensionTransition(end, Vec3.atBottomCenterOf(there), Vec3.ZERO, player.getYRot(), player.getXRot(), DimensionTransition.DO_NOTHING));
+                ctx.check(VikaWorldData.get(ctx.server()).get(id).dimension == Level.END, "she did not leave with him: her record is not in the End");
+                ctx.waitFor("her next to the player in the End", 100, () -> end.getEntity(id) instanceof VikaEntity l && l.distanceTo(player) < 16, () -> {
+                    ctx.check(standsSafely((VikaEntity) end.getEntity(id)), "she is not standing on the floor");
+                    ctx.check(copies(ctx).size() == 1, copies(ctx).size() + " companions exist");
+                    ctx.check(VikaWorldData.get(ctx.server()).get(id).dimension == Level.END, "the record is not in the End");
+                    ctx.waitFor("the End advancement", 100, () -> done(ctx, "end"), () -> {
+                        ctx.check(heard(ctx, "dimension.end"), "she said nothing about the End");
+                        ctx.succeed();
+                    });
+                });
+            })));
+        });
+        // Left in a chunk that unloads: her record is exact, calling her brings her back as she was, once,
+        // and no chunk stays forced. Then the automatic recall of a follower, twice in a row.
+        add(tests, "recall_unloaded", 2400, ctx -> {
+            BlockPos column = new BlockPos(ctx.origin.getX() + 320, 0, ctx.origin.getZ());
+            swept(ctx, ctx.level, column, () -> withLaura(ctx, laura -> {
+                ServerPlayer player = ctx.player();
+                UUID id = laura.getUUID();
+                VikaWorldData.Record record = VikaWorldData.get(ctx.server()).get(id);
+                int forced = ctx.level.getForcedChunks().size();
+                BlockPos far = ground(ctx, column);
+                laura.setMode(VikaMode.STAY);
+                // Newer than her last snapshot: only what is written when she unloads knows about them.
+                laura.inventory().setItem(0, new ItemStack(Items.DIAMOND, 7));
+                ctx.check(!record.snapshot.toString().contains("minecraft:diamond"), "her snapshot already has the diamonds");
+                ctx.check(VikaManager.teleport(laura, ctx.level, far) == laura && laura.blockPosition().distSqr(far) < 64, "she was not sent far away");
+                ctx.waitFor("her chunk to unload", 400, () -> unloaded(laura), () -> {
+                    ctx.check(record.pos.distSqr(far) < 64, "the record says " + record.pos + ", she is near " + far);
+                    ctx.check(record.snapshot != null && record.snapshot.toString().contains("minecraft:diamond"), "the snapshot is older than her unload");
+                    // Called twice before she arrives: the second call must not keep her chunk loaded for ever.
+                    ctx.server().getCommands().performPrefixedCommand(player.createCommandSourceStack(), "laura come");
+                    ctx.server().getCommands().performPrefixedCommand(player.createCommandSourceStack(), "laura come");
+                    ctx.check(VikaManager.pendingRecalls() == 1, VikaManager.pendingRecalls() + " recalls are pending for one companion");
+                    ctx.waitFor("her to come back", 300, () -> ctx.level.getEntity(id) instanceof VikaEntity l && l.distanceTo(player) < 16, () -> {
+                        VikaEntity back = (VikaEntity) ctx.level.getEntity(id);
+                        ctx.check(back.inventory().getItem(0).getCount() == 7, "she came back without her diamonds");
+                        ctx.check(copies(ctx).size() == 1, copies(ctx).size() + " companions exist");
+                        ctx.after(20, () -> {
+                            ctx.check(ctx.level.getForcedChunks().size() == forced, "the recall left a forced chunk");
+                            ctx.check(VikaManager.pendingRecalls() == 0, "a recall is still pending");
+                            followRecall(ctx, back, far, () -> followRecall(ctx, (VikaEntity) ctx.level.getEntity(id), far, ctx::succeed));
+                        });
+                    });
+                });
+            }));
+        });
+        // A follower whose record points to the wrong place (what a world saved by an older version can
+        // hold): the automatic recall gives up without creating anything, only her partner's call brings
+        // her back from her snapshot, as she was when she unloaded.
+        add(tests, "recall_wrong_place", 1500, ctx -> {
+            BlockPos column = new BlockPos(ctx.origin.getX() + 320, 0, ctx.origin.getZ());
+            swept(ctx, ctx.level, column, () -> withLaura(ctx, laura -> {
+                ServerPlayer player = ctx.player();
+                UUID id = laura.getUUID();
+                VikaWorldData.Record record = VikaWorldData.get(ctx.server()).get(id);
+                BlockPos far = ground(ctx, column);
+                laura.setMode(VikaMode.STAY);
+                laura.inventory().setItem(0, new ItemStack(Items.DIAMOND, 7));
+                ctx.check(VikaManager.teleport(laura, ctx.level, far) == laura, "she was not sent far away");
+                ctx.waitFor("her chunk to unload", 400, () -> unloaded(laura), () -> {
+                    VikaManager.clear();
+                    record.pos = far.offset(0, 0, 160);
+                    record.following = true;
+                    ctx.waitFor("the automatic recall to give up", 400, () -> !record.following, () -> {
+                        ctx.check(VikaManager.pendingRecalls() == 0, "a recall is still pending");
+                        ctx.check(copies(ctx).isEmpty(), "the automatic recall created a copy of her");
+                        ctx.server().getCommands().performPrefixedCommand(player.createCommandSourceStack(), "laura come");
+                        ctx.waitFor("her to be restored", 400, () -> ctx.level.getEntity(id) instanceof VikaEntity l && l.distanceTo(player) < 16, () -> {
+                            VikaEntity back = (VikaEntity) ctx.level.getEntity(id);
+                            ctx.check(heard(ctx, "summon.lost"), "she did not say she was lost");
+                            ctx.check(back.inventory().getItem(0).getCount() == 7, "she was restored without her diamonds");
+                            // The one left far away is not kept in the test world.
+                            back.discard();
+                            swept(ctx, ctx.level, column, ctx::succeed);
+                        });
+                    });
+                });
+            }));
+        });
+
+        // ------------------------------------------------------------------ needs, gifts, desires
+        add(tests, "hungry_eats_bread", 300, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            laura.brain().needs().set(Needs.Need.HUNGER, 10);
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BREAD, 3));
+            VikaActions.giveItem(player, laura, player.getMainHandItem(), InteractionHand.MAIN_HAND);
+            ctx.check(laura.brain().needs().get(Needs.Need.HUNGER) > 10, "hunger did not go up");
+            ctx.check(player.getMainHandItem().getCount() == 2, "bread not consumed");
+            ctx.succeed();
+        }));
+        add(tests, "desire_fulfilled", 300, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            long now = laura.level().getGameTime();
+            laura.brain().forceDesire(new Desire(DesireType.Kind.ITEM, "minecraft:poppy", false, now, now + 20 * 600));
+            ctx.check(laura.brain().desire() != null, "desire not set");
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.POPPY));
+            VikaActions.giveItem(player, laura, player.getMainHandItem(), InteractionHand.MAIN_HAND);
+            ctx.check(laura.brain().desire() == null, "desire still active");
+            ctx.check(VikaAdvancements.get(player, "desires") == 1, "desire counter");
+            ctx.succeed();
+        }));
+        // Every music disc is a gift: the default table matches them by what they are (@music_disc),
+        // not by a tag that some Minecraft versions or loaders do not have.
+        add(tests, "gift_music_disc", 200, ctx -> withLaura(ctx, laura -> {
+            ItemSpec discs = ItemSpec.parse("@music_disc").orElse(null);
+            ctx.check(discs != null, "@music_disc not understood");
+            for (Item disc : List.of(Items.MUSIC_DISC_13, Items.MUSIC_DISC_CAT, Items.MUSIC_DISC_PIGSTEP,
+                    Items.MUSIC_DISC_OTHERSIDE, Items.MUSIC_DISC_5, Items.MUSIC_DISC_RELIC)) {
+                ctx.check(discs.test(new ItemStack(disc)), BuiltInRegistries.ITEM.getKey(disc) + " is not a music disc");
+            }
+            ctx.check(!discs.test(new ItemStack(Items.JUKEBOX)), "a jukebox counted as a music disc");
+            GiftTable.loadDefaults();
+            ctx.onCleanup(GiftTable::load);
+            ServerPlayer player = ctx.player();
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.MUSIC_DISC_PIGSTEP));
+            VikaActions.giveItem(player, laura, player.getMainHandItem(), InteractionHand.MAIN_HAND);
+            ctx.check(player.getInventory().countItem(Items.MUSIC_DISC_PIGSTEP) == 0, "she did not take the disc");
+            ctx.check(VikaAdvancements.get(player, "gifts") == 1, "the disc was not taken as a gift");
+            ctx.succeed();
+        }));
+        add(tests, "hay_quiet", 200, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.HAY_BLOCK));
+            VikaActions.gag(player, laura, player.getMainHandItem());
+            ctx.check(laura.isGagged(), "hay not applied");
+            VikaActions.ungag(player, laura, false);
+            ctx.check(!laura.isGagged(), "hay not removed");
+            ctx.succeed();
+        }));
+        add(tests, "skin_builtin", 200, ctx -> withLaura(ctx, laura -> {
+            SkinService.requestSkin(ctx.player(), laura, "builtin:laura_summer", true);
+            ctx.check(laura.getSkinRaw().equals("builtin:laura_summer"), "skin is " + laura.getSkinRaw());
+            SkinService.requestSkin(ctx.player(), laura, "url:https://evil.example.com/skin.png", true);
+            ctx.check(laura.getSkinRaw().equals("builtin:laura_summer"), "a non whitelisted URL was accepted");
+            ctx.succeed();
+        }));
+
+        // ------------------------------------------------------------------ persistence, death
+        add(tests, "save_and_load", 200, ctx -> withLaura(ctx, laura -> {
+            laura.setCustomName(net.minecraft.network.chat.Component.literal("Lina"));
+            laura.setAffection(777);
+            laura.inventory().setItem(0, new ItemStack(Items.DIAMOND, 5));
+            CompoundTag tag = new CompoundTag();
+            laura.saveWithoutId(tag);
+            VikaEntity copy = VikaRegistries.LAURA.get().create(ctx.level);
+            ctx.check(copy != null, "could not create a copy");
+            copy.load(tag);
+            ctx.check(copy.getLauraName().equals("Lina"), "name lost");
+            ctx.check(copy.getAffection() == 777, "affection lost");
+            ctx.check(copy.inventory().getItem(0).getCount() == 5, "inventory lost");
+            copy.discard();
+            ctx.succeed();
+        }));
+        add(tests, "grave_revive", 400, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            laura.setInvulnerable(false);
+            laura.hurt(ctx.level.damageSources().genericKill(), Float.MAX_VALUE);
+            ctx.waitFor("her death", 60, () -> !laura.isAlive(), () -> {
+                ctx.check(VikaManager.hasDeadCompanion(player), "no grave record");
+                BlockPos grave = ctx.origin.offset(2, 0, 0);
+                ctx.level.setBlockAndUpdate(grave, VikaRegistries.GRAVE.get().defaultBlockState());
+                ctx.check(VikaManager.reviveAtGrave(player, grave), "revive failed");
+                ctx.waitFor("her return", 100, () -> !VikaManager.findAll(player).isEmpty(), ctx::succeed);
+            });
+        }));
+
+        // ------------------------------------------------------------------ storage, fetch, work
+        add(tests, "inventory_access", 100, ctx -> {
+            BlockPos chest = ctx.origin.offset(3, 0, 3);
+            ctx.level.setBlockAndUpdate(chest, Blocks.CHEST.defaultBlockState());
+            InventoryAccess access = VikaInventories.at(ctx.level, chest);
+            ctx.check(access != null, "no inventory for a chest");
+            ItemStack rest = access.insert(new ItemStack(Items.BREAD, 10));
+            ctx.check(rest.isEmpty(), "insert failed");
+            ctx.check(access.hasAnyMatching(s -> s.is(Items.BREAD)), "bread not found");
+            int taken = 0;
+            for (int i = 0; i < access.size(); i++) {
+                taken += access.extract(i, 64).getCount();
+            }
+            ctx.check(taken == 10, "extracted " + taken);
+            ctx.succeed();
+        });
+        add(tests, "fetch_from_chest", 900, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            BlockPos chest = ctx.origin.offset(8, 0, 0);
+            ctx.level.setBlockAndUpdate(chest, Blocks.CHEST.defaultBlockState());
+            if (ctx.level.getBlockEntity(chest) instanceof ChestBlockEntity be) {
+                be.setItem(0, new ItemStack(Items.APPLE, 10));
+            }
+            VikaActions.fetch(player, laura, "minecraft:apple", 3, false);
+            ctx.waitFor("3 apples delivered", 800, () -> player.getInventory().countItem(Items.APPLE) >= 3, ctx::succeed);
+        }));
+        // The command takes full ids, a count and "queue" on one line.
+        add(tests, "fetch_command", 900, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            BlockPos chest = ctx.origin.offset(8, 0, 0);
+            ctx.level.setBlockAndUpdate(chest, Blocks.CHEST.defaultBlockState());
+            if (ctx.level.getBlockEntity(chest) instanceof ChestBlockEntity be) {
+                be.setItem(0, new ItemStack(Items.BREAD, 10));
+            }
+            ctx.server().getCommands().performPrefixedCommand(player.createCommandSourceStack(), "laura fetch minecraft:bread 2");
+            ctx.waitFor("2 breads delivered", 800, () -> player.getInventory().countItem(Items.BREAD) >= 2, () -> {
+                ctx.check(player.getInventory().countItem(Items.BREAD) == 2, "count ignored: " + player.getInventory().countItem(Items.BREAD));
+                ctx.succeed();
+            });
+        }));
+        // A number typed in a chat order is the quantity she brings back.
+        add(tests, "fetch_chat_count", 900, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            BlockPos chest = ctx.origin.offset(8, 0, 0);
+            ctx.level.setBlockAndUpdate(chest, Blocks.CHEST.defaultBlockState());
+            if (ctx.level.getBlockEntity(chest) instanceof ChestBlockEntity be) {
+                be.setItem(0, new ItemStack(Items.BREAD, 20));
+            }
+            VikaChat.onChat(player, "bring me 3 bread please");
+            ctx.waitFor("3 breads delivered", 800, () -> player.getInventory().countItem(Items.BREAD) >= 3, () -> {
+                ctx.check(player.getInventory().countItem(Items.BREAD) == 3, "count ignored: " + player.getInventory().countItem(Items.BREAD));
+                ctx.succeed();
+            });
+        }));
+        // "Come" brings her back; it never creates a second companion.
+        add(tests, "come_does_not_summon", 200, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            VikaManager.call(player);
+            ctx.server().getCommands().performPrefixedCommand(player.createCommandSourceStack(), "laura come");
+            ctx.after(5, () -> {
+                ctx.check(VikaWorldData.get(ctx.server()).byOwner(player.getUUID()).size() == 1, "a second companion was created");
+                ctx.succeed();
+            });
+        }));
+        add(tests, "dismiss_and_release", 300, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            int before = laura.getAffection();
+            VikaManager.dismiss(player, laura);
+            resetCooldown(ctx);
+            VikaManager.summon(player, false);
+            ctx.waitFor("her to come back", 100, () -> !VikaManager.findAll(player).isEmpty(), () -> {
+                VikaEntity back = VikaManager.findAll(player).get(0);
+                ctx.check(back.getAffection() == before - VikaConfig.dismissAffectionPenalty.getInt(), "dismiss penalty: " + before + " to " + back.getAffection());
+                back.inventory().setItem(0, new ItemStack(Items.DIAMOND, 3));
+                // The first command only asks for confirmation.
+                ctx.server().getCommands().performPrefixedCommand(player.createCommandSourceStack(), "laura release");
+                ctx.check(back.isAlive(), "released without confirmation");
+                ctx.server().getCommands().performPrefixedCommand(player.createCommandSourceStack(), "laura release confirm");
+                ctx.check(VikaWorldData.get(ctx.server()).byOwner(player.getUUID()).isEmpty(), "she is still in the world data");
+                ctx.check(!ctx.level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, back.getBoundingBox().inflate(3),
+                        e -> e.getItem().is(Items.DIAMOND)).isEmpty(), "her belongings were not dropped");
+                ctx.succeed();
+            });
+        }));
+        add(tests, "assign_chest", 200, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            BlockPos chest = ctx.origin.offset(0, 0, 3);
+            ctx.level.setBlockAndUpdate(chest, Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.NORTH));
+            player.lookAt(EntityAnchorArgument.Anchor.EYES, Vec3.atCenterOf(chest));
+            VikaActions.perform(player, laura, VikaAction.CHEST, "WOOD", VikaActions.Source.MENU);
+            ctx.check(laura.workplace().purposeOf(chest) == ChestPurpose.WOOD, "chest not assigned");
+            ctx.succeed();
+        }));
+        add(tests, "chop_tree", 1400, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            BlockPos base = ctx.origin.offset(6, 0, 6);
+            // A natural tree stands on soil: a trunk on stone is a build, which she leaves alone.
+            ctx.level.setBlockAndUpdate(base.below(), Blocks.DIRT.defaultBlockState());
+            for (int y = 0; y < 5; y++) {
+                ctx.level.setBlockAndUpdate(base.above(y), Blocks.OAK_LOG.defaultBlockState());
+            }
+            for (int dx = -2; dx <= 2; dx++) {
+                for (int dz = -2; dz <= 2; dz++) {
+                    for (int y = 3; y <= 5; y++) {
+                        BlockPos p = base.offset(dx, y, dz);
+                        if (ctx.level.getBlockState(p).isAir()) {
+                            ctx.level.setBlockAndUpdate(p, Blocks.OAK_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, false).setValue(LeavesBlock.DISTANCE, 1));
+                        }
+                    }
+                }
+            }
+            VikaActions.task(player, laura, VikaTask.Type.CHOP_TREE, 12, false);
+            ctx.waitFor("the tree to fall", 1300, () -> !ctx.level.getBlockState(base).is(Blocks.OAK_LOG)
+                    && (player.getInventory().countItem(Items.OAK_LOG) > 0 || laura.inventory().countItem(Items.OAK_LOG) > 0), ctx::succeed);
+        }));
+        add(tests, "harvest_field", 1200, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            BlockPos field = ctx.origin.offset(-6, 0, 4);
+            for (int dx = 0; dx < 3; dx++) {
+                BlockPos soil = field.offset(dx, -1, 0);
+                ctx.level.setBlockAndUpdate(soil, Blocks.FARMLAND.defaultBlockState());
+                ctx.level.setBlockAndUpdate(soil.above(), Blocks.WHEAT.defaultBlockState().setValue(CropBlock.AGE, 7));
+            }
+            ctx.level.setBlockAndUpdate(field.offset(1, -1, 1), Blocks.WATER.defaultBlockState());
+            VikaActions.task(player, laura, VikaTask.Type.HARVEST, 12, false);
+            ctx.waitFor("the wheat", 1100, () -> player.getInventory().countItem(Items.WHEAT) + laura.inventory().countItem(Items.WHEAT) >= 3, ctx::succeed);
+        }));
+        add(tests, "cook_on_campfire", 2400, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            BlockPos fire = ctx.origin.offset(4, 0, -4);
+            ctx.level.setBlockAndUpdate(fire, Blocks.CAMPFIRE.defaultBlockState());
+            BlockPos chest = ctx.origin.offset(6, 0, -4);
+            ctx.level.setBlockAndUpdate(chest, Blocks.CHEST.defaultBlockState());
+            if (ctx.level.getBlockEntity(chest) instanceof ChestBlockEntity be) {
+                be.setItem(0, new ItemStack(Items.BEEF, 2));
+            }
+            laura.workplace().assign(chest, ctx.level.dimension(), ChestPurpose.INGREDIENTS);
+            VikaActions.task(player, laura, VikaTask.Type.COOK, 12, false);
+            ctx.waitFor("cooked beef", 2300, () -> player.getInventory().countItem(Items.COOKED_BEEF) + laura.inventory().countItem(Items.COOKED_BEEF) > 0, ctx::succeed);
+        }));
+        add(tests, "chat_queue", 300, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            VikaActions.task(player, laura, VikaTask.Type.HARVEST, 5, false);
+            VikaChat.onChat(player, "come here then go home");
+            ctx.after(10, () -> {
+                ctx.check(!laura.workplace().queued().isEmpty(), "nothing queued");
+                ctx.succeed();
+            });
+        }));
+        add(tests, "wear_backpack", 200, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BUNDLE));
+            laura.mobInteract(player, InteractionHand.MAIN_HAND);
+            ctx.check(laura.getBackItem().is(Items.BUNDLE), "the bundle is not on her back");
+            ctx.check(player.getMainHandItem().isEmpty(), "the bundle was not taken");
+            CompoundTag tag = new CompoundTag();
+            laura.saveWithoutId(tag);
+            VikaEntity copy = VikaRegistries.LAURA.get().create(ctx.level);
+            ctx.check(copy != null, "could not create a copy");
+            copy.load(tag);
+            ctx.check(copy.getBackItem().is(Items.BUNDLE), "back item not saved");
+            copy.discard();
+            ctx.succeed();
+        }));
+        add(tests, "bags_overflow", 100, ctx -> withLaura(ctx, laura -> {
+            for (int i = 0; i < laura.inventory().getContainerSize(); i++) {
+                laura.inventory().setItem(i, new ItemStack(Items.STONE, 64));
+            }
+            ItemStack rest = laura.bags().add(new ItemStack(Items.DIAMOND, 3));
+            ctx.check(rest.getCount() == 3, "a full bag accepted items without a backpack");
+            ctx.check(!laura.bags().canAdd(new ItemStack(Items.DIAMOND)), "canAdd on a full bag");
+            ctx.check(laura.bags().count(s -> s.is(Items.STONE)) == 64 * laura.inventory().getContainerSize(), "count");
+            ctx.check(laura.bags().take(s -> s.is(Items.STONE), 70).stream().mapToInt(ItemStack::getCount).sum() == 70, "take");
+            ctx.succeed();
+        }));
+        if (ViktoriaMod.platform().isModLoaded("farmersdelight")) {
+            add(tests, "compat_farmers_delight_pot", 3000, ctx -> withLaura(ctx, laura -> {
+                ServerPlayer player = ctx.player();
+                CookingPots pots = ViktoriaMod.platform().cookingPots();
+                CookingPots.Recipe recipe = null;
+                for (CookingPots.Recipe r : pots.recipes(ctx.level)) {
+                    boolean simple = true;
+                    for (net.minecraft.world.item.crafting.Ingredient i : r.ingredients()) {
+                        simple &= i.getItems().length > 0;
+                    }
+                    if (simple && r.ingredients().size() <= 3) {
+                        recipe = r;
+                        break;
+                    }
+                }
+                ctx.check(recipe != null, "no Farmer's Delight pot recipe found");
+                BlockPos fire = ctx.origin.offset(4, 0, -4);
+                ctx.level.setBlockAndUpdate(fire, Blocks.CAMPFIRE.defaultBlockState());
+                ctx.level.setBlockAndUpdate(fire.above(), BuiltInRegistries.BLOCK.get(ResourceLocation.parse("farmersdelight:cooking_pot")).defaultBlockState());
+                ctx.check(pots.isPot(ctx.level, fire.above()), "the pot is not recognized");
+                BlockPos chest = ctx.origin.offset(6, 0, -4);
+                ctx.level.setBlockAndUpdate(chest, Blocks.CHEST.defaultBlockState());
+                if (ctx.level.getBlockEntity(chest) instanceof ChestBlockEntity be) {
+                    int slot = 0;
+                    for (net.minecraft.world.item.crafting.Ingredient i : recipe.ingredients()) {
+                        be.setItem(slot++, i.getItems()[0].copyWithCount(1));
+                    }
+                    if (!recipe.container().isEmpty()) {
+                        be.setItem(slot, recipe.container().copyWithCount(4));
+                    }
+                }
+                laura.workplace().assign(chest, ctx.level.dimension(), ChestPurpose.INGREDIENTS);
+                ItemStack result = recipe.result();
+                VikaActions.task(player, laura, VikaTask.Type.COOK, 12, false);
+                ctx.waitFor(result.getHoverName().getString() + " from the pot", 2900,
+                        () -> player.getInventory().countItem(result.getItem()) + laura.bags().count(s -> s.is(result.getItem())) > 0, ctx::succeed);
+            }));
+        }
+        if (ViktoriaMod.platform().isModLoaded("kubejs")) {
+            // Needs run-selftest/kubejs/server_scripts/laura_selftest.js.
+            add(tests, "compat_kubejs", 400, ctx -> {
+                ctx.check(com.l7cor1s.viktoria.gift.GiftTable.find(new ItemStack(Items.EMERALD_BLOCK)) != null, "script gift missing");
+                ctx.check(com.l7cor1s.viktoria.gift.GiftTable.isFavoriteFood(new ItemStack(Items.BAKED_POTATO)), "script favorite food missing");
+                ctx.check(intent("kubejs test phrase").equals("kubejs_test"), "script chat trigger missing");
+                ctx.check(com.l7cor1s.viktoria.cooking.Cookbook.meals().stream().anyMatch(m -> m.id().equals("kubejs_bread")), "script meal missing");
+                ctx.check(intent("kubejs plain phrase").equals("kubejs_plain"), "second script chat trigger missing");
+                withLaura(ctx, laura -> {
+                    ServerPlayer player = ctx.player();
+                    ctx.check(laura.getAffection() >= VikaConfig.startAffection.getInt() + 77, "summon event did not run: " + laura.getAffection());
+                    List<Sent> sent = watch(ctx);
+                    // First a phrase no script cancels: her answer is heard, so the check on the
+                    // cancelled phrase below cannot pass just because nothing is ever heard.
+                    VikaChat.onChat(player, "kubejs plain phrase");
+                    ctx.waitFor("her answer to a phrase no script cancels", 40, () -> heard(sent, player, "Plain answers work"), () -> {
+                        sent.clear();
+                        VikaChat.onChat(player, "kubejs test phrase");
+                        ctx.waitFor("the scripted emote", 40, () -> laura.getEmote() == Emote.CELEBRATE, () -> ctx.after(5, () -> {
+                            ctx.check(!heard(sent, player, "Scripts are fun"), "event.cancel() did not stop her answer");
+                            ctx.check(VikaAPI.fire("chat", laura, player, "kubejs_test"), "the chat event does not report the script's cancel");
+                            ctx.check(!VikaAPI.fire("chat", laura, player, "kubejs_plain"), "a chat event no script cancelled is reported as cancelled");
+                            ctx.succeed();
+                        }));
+                    });
+                });
+            });
+        }
+
+        // ------------------------------------------------------------------ network and untrusted files
+        // A flood of requests for a file costs one disk read, and the file leaves at a fixed pace.
+        add(tests, "asset_request_throttle", 400, ctx -> {
+            ServerPlayer player = ctx.player();
+            byte[] png = new byte[200_000];
+            byte[] header = {(byte) 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n', 0, 0, 0, 13, 'I', 'H', 'D', 'R', 0, 0, 0, 64, 0, 0, 0, 64};
+            System.arraycopy(header, 0, png, 0, header.length);
+            for (int i = header.length; i < png.length; i++) {
+                png[i] = (byte) (i * 31);
+            }
+            Path file = ServerAssetStore.dir(AssetKind.SKIN).resolve("selftest_throttle.png");
+            Files.write(file, png);
+            ctx.onCleanup(() -> {
+                deleteQuietly(file);
+                ServerAssetStore.rescan();
+            });
+            ServerAssetStore.rescan();
+            ctx.check(ServerAssetStore.get(AssetKind.SKIN, "selftest_throttle") != null, "the test skin was not found by the scan");
+            List<Sent> sent = watch(ctx);
+            long reads = ServerAssetStore.diskReads();
+            byte[] request = assetRequest(AssetKind.SKIN, "selftest_throttle");
+            for (int i = 0; i < 5000; i++) {
+                VikaNetwork.handleServer(player, request);
+            }
+            ctx.check(sent.isEmpty(), "the request handler sent " + sent.size() + " messages itself");
+            ctx.check(ServerAssetStore.diskReads() == reads, "a request read the file from disk");
+            ctx.check(VikaNetwork.queuedAssets(player) == 1, "5000 requests for one file queued " + VikaNetwork.queuedAssets(player) + " transfers");
+            ByteArrayOutputStream received = new ByteArrayOutputStream();
+            int[] seen = {0};
+            ctx.waitFor("the file, one tick at a time", 200, () -> {
+                int thisTick = 0;
+                for (; seen[0] < sent.size(); seen[0]++) {
+                    byte[] chunk = assetChunk(sent.get(seen[0]).bytes());
+                    if (chunk != null) {
+                        thisTick += chunk.length;
+                        received.writeBytes(chunk);
+                    }
+                }
+                ctx.check(thisTick <= VikaNetwork.ASSET_BYTES_PER_TICK, thisTick + " bytes were sent in one tick");
+                return received.size() >= png.length;
+            }, () -> {
+                ctx.check(Arrays.equals(received.toByteArray(), png), "the file arrived damaged");
+                ctx.check(ServerAssetStore.diskReads() == reads + 1, "the file was read " + (ServerAssetStore.diskReads() - reads) + " times from disk");
+                ctx.check(VikaNetwork.queuedAssets(player) == 0, "the transfer is still queued");
+                // The budget of requests is used up: other names are dropped without an answer.
+                sent.clear();
+                for (int i = 0; i < 5000; i++) {
+                    VikaNetwork.handleServer(player, assetRequest(AssetKind.SKIN, "selftest_missing_" + i));
+                    VikaNetwork.handleServer(player, listRequest(AssetKind.SKIN));
+                }
+                ctx.check(sent.size() <= VikaNetwork.ASSET_REQUEST_BURST, "a flood of requests got " + sent.size() + " answers");
+                ctx.succeed();
+            });
+        });
+        // What a client keeps from a server: the hash names the cached file, so it must be a real one.
+        add(tests, "asset_cache_rules", 100, ctx -> {
+            Path dir = ViktoriaMod.platform().gameDir().resolve("viktoria").resolve("cache").resolve("selftest");
+            Path base = dir.toAbsolutePath().normalize();
+            String good = ServerAssetStore.sha1("laura".getBytes(StandardCharsets.UTF_8));
+            ctx.check(AssetCache.isSha1(good), "a real hash was refused: " + good);
+            Path inside = AssetCache.file(dir, good, ".png");
+            ctx.check(inside != null && base.equals(inside.getParent()) && inside.getFileName().toString().equals(good + ".png"), "cache file of a real hash: " + inside);
+            String[] badHashes = {"", "abc", good.toUpperCase(Locale.ROOT), good + "0", good.substring(1), good.substring(1) + "g",
+                    "../../../resourcepacks/planted", "..\\..\\..\\resourcepacks\\planted", "C:\\Windows\\Temp\\planted", "/tmp/planted",
+                    "\\\\host\\share\\planted", good.substring(0, 37) + "/..", good.substring(0, 38) + "\\.", good.substring(0, 38) + "/a",
+                    "0123456789abcdef0123456789abcdef0123456\0"};
+            for (String bad : badHashes) {
+                ctx.check(!AssetCache.isSha1(bad), "accepted as a hash: " + bad);
+                ctx.check(AssetCache.file(dir, bad, ".zip") == null && AssetCache.file(dir, bad, ".png") == null, "a cache path was built from: " + bad);
+            }
+            ctx.check(AssetCache.file(dir, null, ".png") == null, "a cache path was built from no hash");
+            for (String bad : new String[]{"", "..", "../skin", "a/../b", "/root", "C:/skin", "C:\\skin", "a\\b", "\\\\host\\share", "a\0b"}) {
+                ctx.check(!ServerAssetStore.isSafeName(bad), "accepted as an asset name: " + bad);
+            }
+            ctx.check(ServerAssetStore.isSafeName("uploads/steve_my skin-2"), "a plain asset name was refused");
+            // Content is only kept under the hash it really has.
+            byte[] skin = "skin bytes".getBytes(StandardCharsets.UTF_8);
+            ctx.check(AssetCache.matchesSkin(ServerAssetStore.sha1(skin), skin), "a skin does not match its own hash");
+            ctx.check(!AssetCache.matchesSkin(good, skin), "a skin matched the hash of something else");
+            // A model as the server sends it: the client computes the same hash from the archive.
+            Path folder = ServerAssetStore.dir(AssetKind.MODEL).resolve("selftest_cache");
+            Files.createDirectories(folder);
+            Files.writeString(folder.resolve("selftest_cache.bbmodel"), "{\"elements\":[]}", StandardCharsets.UTF_8);
+            Files.write(folder.resolve("texture.png"), new byte[]{1, 2, 3, 4});
+            ctx.onCleanup(() -> {
+                deleteQuietly(folder.resolve("selftest_cache.bbmodel"));
+                deleteQuietly(folder.resolve("texture.png"));
+                deleteQuietly(folder);
+                ServerAssetStore.rescan();
+            });
+            ServerAssetStore.rescan();
+            ServerAssetStore.Entry entry = ServerAssetStore.get(AssetKind.MODEL, "selftest_cache");
+            ctx.check(entry != null && entry.files().size() == 2, "the test model was not found by the scan");
+            ctx.check(AssetCache.isSha1(entry.sha1()), "the server hash is not what clients accept: " + entry.sha1());
+            byte[] zip = ServerAssetStore.read(entry);
+            Map<String, byte[]> files = AssetCache.unzip(zip, 1024 * 1024);
+            ctx.check(files.size() == 2 && AssetCache.matchesModel(entry.sha1(), files), "the archive does not match the server hash");
+            files.put("texture.png", new byte[]{9, 9, 9, 9});
+            ctx.check(!AssetCache.matchesModel(entry.sha1(), files), "a changed archive still matches the server hash");
+            boolean refused = false;
+            try {
+                AssetCache.unzip(zip, 8);
+            } catch (IOException expected) {
+                refused = true;
+            }
+            ctx.check(refused, "an archive larger than the limit was unpacked");
+            ctx.succeed();
+        });
+        // A model file made to overflow the stack is an invalid model, on every path.
+        add(tests, "model_parser_limits", 300, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            Molang.Context values = new Molang.Context();
+            ctx.check(Molang.parse("(".repeat(1000) + "1" + ")".repeat(1000)).eval(values) == 0, "1000 nested parentheses");
+            ctx.check(Molang.parse("-".repeat(2000) + "1").eval(values) == 0, "2000 minus signs");
+            ctx.check(Molang.parse("-".repeat(20000) + "1").eval(values) == 0, "20000 minus signs");
+            ctx.check(Molang.parse("q.anim_time" + "+1".repeat(1500)).eval(values) == 0, "a sum of 1500 terms");
+            ctx.check(Molang.parse("1 ? ".repeat(500) + "1").eval(values) == 0, "500 nested ternaries");
+            ctx.check(Molang.parse("(".repeat(40) + "7" + ")".repeat(40)).eval(values) == 7, "40 nested parentheses are fine");
+            ctx.check(Molang.parse("(1 + 2) * 3 - math.max(1, 2)").eval(values) == 7, "ordinary expression");
+            values.animTime = 2;
+            ctx.check(Molang.parse("q.anim_time" + " + 1".repeat(100)).eval(values) == 102, "a sum of 100 terms is fine");
+
+            ModelData deep = parseModel("deep.bbmodel", bbmodel(1, "(".repeat(1000) + "1" + ")".repeat(1000)));
+            ctx.check(deep != null && deep.cubeCount() == 1, "a model with a deep expression should load with that value read as 0");
+            ctx.check(parseModel("ten.bbmodel", bbmodel(10, "0")) != null, "ten nested bones were refused");
+            ctx.check(parseModel("nested.bbmodel", bbmodel(20000, "0")) == null, "20000 nested bones were accepted");
+            // Whatever the parser throws, a caller only ever sees an invalid model.
+            String geo = "{\"minecraft:geometry\":[{\"bones\":[{\"name\":\"b\",\"cubes\":[{\"origin\":[0,0,0],\"size\":[1,1,1]}]}]}]}";
+            for (Throwable thrown : new Throwable[]{new StackOverflowError(), new OutOfMemoryError("test"), new IllegalStateException("test")}) {
+                boolean invalid = false;
+                try {
+                    ModelParser.parseChecked("side.geo.json", geo, f -> rethrow(thrown));
+                } catch (ModelParser.InvalidModelException expected) {
+                    invalid = expected.getCause() == thrown && expected.getMessage() != null && !expected.getMessage().isBlank();
+                }
+                ctx.check(invalid, thrown.getClass().getSimpleName() + " was not reported as an invalid model");
+            }
+            // The same file through the upload packets a client sends.
+            boolean uploads = VikaConfig.allowModelUploads.get();
+            VikaConfig.allowModelUploads.set(true);
+            ctx.onCleanup(() -> VikaConfig.allowModelUploads.set(uploads));
+            List<Sent> sent = watch(ctx);
+            int models = ServerAssetStore.list(AssetKind.MODEL).size();
+            upload(player, laura, AssetKind.MODEL, "selftest_nested.bbmodel", bbmodel(20000, "0").getBytes(StandardCharsets.UTF_8));
+            List<Boolean> results = uploadResults(sent, player);
+            ctx.check(results.size() == 1 && !results.get(0), "the upload of 20000 nested bones answered " + results);
+            ctx.check(ServerAssetStore.list(AssetKind.MODEL).size() == models, "the refused upload was stored");
+            ctx.succeed();
+        }));
+        // Her status (home, jobs, needs) only goes to players who may command her.
+        add(tests, "status_permission", 200, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer owner = ctx.player();
+            ServerPlayer stranger = MockPlayers.create(ctx.level, "VikaStranger");
+            ctx.onCleanup(() -> MockPlayers.remove(stranger));
+            stranger.teleportTo(owner.getX() + 2, owner.getY(), owner.getZ());
+            boolean others = VikaConfig.othersCanInteract.get();
+            VikaConfig.othersCanInteract.set(false);
+            ctx.onCleanup(() -> VikaConfig.othersCanInteract.set(others));
+            ctx.check(!laura.isOwnedBy(stranger) && !stranger.hasPermissions(2), "the second player is not a stranger");
+            List<Sent> sent = watch(ctx);
+            byte[] request = statusRequest(laura.getId());
+            VikaNetwork.handleServer(stranger, request);
+            ctx.check(count(sent, stranger, VikaNetwork.S2C_STATUS) == 0, "a stranger read her status");
+            VikaNetwork.handleServer(owner, request);
+            ctx.check(count(sent, owner, VikaNetwork.S2C_STATUS) == 1, "her owner got no status");
+            VikaConfig.othersCanInteract.set(true);
+            VikaNetwork.handleServer(stranger, request);
+            ctx.check(count(sent, stranger, VikaNetwork.S2C_STATUS) == 1, "othersCanInteract did not open her status to others");
+            ctx.succeed();
+        }));
+        // Arguments made of separators only ("|", ":") are orders like any other, not errors.
+        add(tests, "malformed_action_arguments", 200, ctx -> withLaura(ctx, laura -> {
+            ServerPlayer player = ctx.player();
+            for (String arg : new String[]{"|", "||", "|5|queue", "", " | "}) {
+                VikaActions.perform(player, laura, VikaAction.FETCH, arg, VikaActions.Source.MENU);
+            }
+            for (String arg : new String[]{":", "::", ":on:8", "", " : "}) {
+                VikaActions.perform(player, laura, VikaAction.JOB, arg, VikaActions.Source.MENU);
+                VikaActions.perform(player, laura, VikaAction.TASK, arg, VikaActions.Source.MENU);
+                VikaAPI.order(player, laura, "task", arg);
+            }
+            ctx.check(!laura.workplace().hasJobs() && laura.workplace().queued().isEmpty(), "an empty order started some work");
+            ctx.succeed();
+        }));
+        add(tests, "advancement_counters", 100, ctx -> {
+            ServerPlayer player = ctx.player();
+            VikaAdvancements.add(player, "hugs", 1);
+            ctx.check(VikaAdvancements.get(player, "hugs") == 1, "counter not saved");
+            ctx.check(VikaWorldData.get(ctx.server()).meta(player.getUUID()).stats.get("hugs") == 1, "world data");
+            ctx.succeed();
+        });
+    }
+
+    /** Where the tests that go to the Nether stand: above its roof, clear of lava and mobs. */
+    private static final BlockPos NETHER_FLOOR = new BlockPos(8, 200, 8);
+
+    private static AdvancementHolder advancement(TestRunner.Context ctx, String key) {
+        AdvancementHolder holder = ctx.server().getAdvancements().get(ViktoriaMod.id("laura/" + key));
+        ctx.check(holder != null, "advancement laura/" + key + " is not loaded");
+        return holder;
+    }
+
+    /** The vanilla advancement of the test player, not the mod's own counter. */
+    private static boolean done(TestRunner.Context ctx, String key) {
+        return ctx.player().getAdvancements().getOrStartProgress(advancement(ctx, key)).isDone();
+    }
+
+    /** Fake players keep their UUID from run to run, and their advancement file with it. */
+    private static void revoke(TestRunner.Context ctx, String key) {
+        AdvancementHolder holder = advancement(ctx, key);
+        List<String> granted = new ArrayList<>();
+        ctx.player().getAdvancements().getOrStartProgress(holder).getCompletedCriteria().forEach(granted::add);
+        for (String criterion : granted) {
+            ctx.player().getAdvancements().revoke(holder, criterion);
+        }
+        ctx.check(!done(ctx, key), "advancement laura/" + key + " could not be revoked");
+    }
+
+    /** True when the test player was told one of the lines of a dialogue key (fake players speak English). */
+    private static boolean heard(TestRunner.Context ctx, String key) {
+        return heardTimes(ctx, key) > 0;
+    }
+
+    private static int heardTimes(TestRunner.Context ctx, String key) {
+        List<String> lines = DialogueManager.sets().get("en_us").lines(key);
+        int times = 0;
+        for (String message : MockPlayers.heard(ctx.player())) {
+            for (String line : lines) {
+                if (message.endsWith(line)) {
+                    times++;
+                    break;
+                }
+            }
+        }
+        return times;
+    }
+
+    /** Every living companion of the test player that is loaded, in every dimension. */
+    private static List<VikaEntity> copies(TestRunner.Context ctx) {
+        List<VikaEntity> out = new ArrayList<>();
+        for (ServerLevel level : ctx.server().getAllLevels()) {
+            for (Entity entity : level.getAllEntities()) {
+                if (entity instanceof VikaEntity laura && laura.isAlive() && !laura.isRemoved() && ctx.player().getUUID().equals(laura.getOwnerUUID())) {
+                    out.add(laura);
+                }
+            }
+        }
+        return out;
+    }
+
+    /** Feet on a block and body free: where a teleport may leave her. */
+    private static boolean standsSafely(VikaEntity laura) {
+        BlockPos below = BlockPos.containing(laura.getX(), laura.getY() - 0.1, laura.getZ());
+        return !laura.level().getBlockState(below).getCollisionShape(laura.level(), below).isEmpty() && laura.level().noCollision(laura);
+    }
+
+    /** A small stone floor with air above it, in any dimension. Returns the block to stand in. */
+    private static BlockPos floor(ServerLevel level, BlockPos center) {
+        for (int dx = -4; dx <= 4; dx++) {
+            for (int dz = -4; dz <= 4; dz++) {
+                level.setBlockAndUpdate(center.offset(dx, -1, dz), Blocks.SMOOTH_STONE.defaultBlockState());
+                for (int y = 0; y < 4; y++) {
+                    if (!level.getBlockState(center.offset(dx, y, dz)).isAir()) {
+                        level.removeBlock(center.offset(dx, y, dz), false);
+                    }
+                }
+            }
+        }
+        return center;
+    }
+
+    /** The Nether of the test server. Fake players load a full view distance of it: kept small. */
+    private static ServerLevel nether(TestRunner.Context ctx) {
+        ServerLevel nether = ctx.server().getLevel(Level.NETHER);
+        ctx.check(nether != null, "the test server has no Nether");
+        narrowView(ctx);
+        return nether;
+    }
+
+    private static void narrowView(TestRunner.Context ctx) {
+        int old = ctx.server().getPlayerList().getViewDistance();
+        ctx.server().getPlayerList().setViewDistance(3);
+        ctx.onCleanup(() -> ctx.server().getPlayerList().setViewDistance(old));
+    }
+
+    /** Releases the chunks the runner keeps loaded: as in a normal world, only the player loads them. */
+    private static void unforce(TestRunner.Context ctx) {
+        ChunkPos center = new ChunkPos(ctx.origin);
+        for (int dx = -2; dx <= 2; dx++) {
+            for (int dz = -2; dz <= 2; dz++) {
+                ctx.level.setChunkForced(center.x + dx, center.z + dz, false);
+            }
+        }
+    }
+
+    /** The ground of the flat test world under a position (its chunk is loaded for the answer). */
+    /**
+     * Saved with her chunk and gone from memory. Not being found by her UUID is not enough: she is
+     * hidden for a moment when she arrives in a chunk that is still loading, and what the game writes
+     * when it really unloads her would come after what the test puts in her record.
+     */
+    private static boolean unloaded(VikaEntity laura) {
+        return laura.getRemovalReason() == Entity.RemovalReason.UNLOADED_TO_CHUNK;
+    }
+
+    private static BlockPos ground(TestRunner.Context ctx, BlockPos column) {
+        ctx.level.getChunkAt(column);
+        return new BlockPos(column.getX(), ctx.level.getHeight(Heightmap.Types.MOTION_BLOCKING, column.getX(), column.getZ()), column.getZ());
+    }
+
+    /**
+     * Loads a place away from the test platform (another dimension, a distant spot) for a moment and
+     * removes the companions an interrupted run may have left there, then goes on. The runner only
+     * cleans its own platform.
+     */
+    private static void swept(TestRunner.Context ctx, ServerLevel level, BlockPos center, Runnable then) {
+        swept(ctx, level, center, false, then);
+    }
+
+    /** {@code keep}: the place stays loaded until the test ends. */
+    private static void swept(TestRunner.Context ctx, ServerLevel level, BlockPos center, boolean keep, Runnable then) {
+        ChunkPos chunk = new ChunkPos(center);
+        Runnable release = () -> {
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    level.setChunkForced(chunk.x + dx, chunk.z + dz, false);
+                }
+            }
+        };
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                level.setChunkForced(chunk.x + dx, chunk.z + dz, true);
+            }
+        }
+        ctx.onCleanup(release);
+        ctx.after(20, () -> {
+            for (VikaEntity stray : level.getEntitiesOfClass(VikaEntity.class, new AABB(center).inflate(64, 512, 64))) {
+                stray.discard();
+            }
+            if (!keep) {
+                release.run();
+            }
+            then.run();
+        });
+    }
+
+    /** A moment together before they travel: her brain ticks once per second, and what she says on arrival is about the place they left. */
+    private static void together(TestRunner.Context ctx, Runnable then) {
+        ctx.after(25, then);
+    }
+
+    /**
+     * Leaves her far away in a chunk that unloads, with a record that says she was following (what a
+     * waystone or a /tp of her partner leaves behind), and waits for the automatic recall. The server
+     * state is reset first, like a world reopened in the same game session: what happened before must
+     * not hold the recall back.
+     */
+    private static void followRecall(TestRunner.Context ctx, VikaEntity laura, BlockPos far, Runnable then) {
+        ServerPlayer player = ctx.player();
+        UUID id = laura.getUUID();
+        laura.setMode(VikaMode.STAY);
+        VikaManager.teleport(laura, ctx.level, far);
+        ctx.waitFor("her chunk to unload", 400, () -> unloaded(laura), () -> {
+            VikaManager.clear();
+            VikaWorldData.get(ctx.server()).get(id).following = true;
+            ctx.waitFor("the automatic recall", 300, () -> ctx.level.getEntity(id) instanceof VikaEntity l && l.distanceTo(player) < 16, () -> {
+                ctx.check(copies(ctx).size() == 1, copies(ctx).size() + " companions exist");
+                then.run();
+            });
+        });
+    }
+
+    private static String intent(String message) {
+        DialogueManager.IntentMatch m = DialogueManager.match(message);
+        return m == null ? "" : m.intent();
+    }
+
+    // ------------------------------------------------------------------ messages of the mod channel
+
+    /** A message the mod sent to a player while a test was watching. */
+    private record Sent(ServerPlayer to, byte[] bytes) {
+    }
+
+    /** Records every message the mod sends to players until the test ends. */
+    private static List<Sent> watch(TestRunner.Context ctx) {
+        List<Sent> sent = new ArrayList<>();
+        VikaNetwork.observe((to, bytes) -> sent.add(new Sent(to, bytes)));
+        ctx.onCleanup(() -> VikaNetwork.observe(null));
+        return sent;
+    }
+
+    private static FriendlyByteBuf reader(byte[] message) {
+        return new FriendlyByteBuf(Unpooled.wrappedBuffer(message));
+    }
+
+    private static int count(List<Sent> sent, ServerPlayer to, int id) {
+        int n = 0;
+        for (Sent s : sent) {
+            if (s.to() == to && reader(s.bytes()).readVarInt() == id) {
+                n++;
+            }
+        }
+        return n;
+    }
+
+    /** True if she said a line holding this text to the player (the speech bubble message). */
+    private static boolean heard(List<Sent> sent, ServerPlayer to, String text) {
+        for (Sent s : sent) {
+            FriendlyByteBuf buf = reader(s.bytes());
+            if (s.to() == to && buf.readVarInt() == VikaNetwork.S2C_SPEECH) {
+                buf.readVarInt();
+                if (TextCodec.fromJson(buf.readUtf(32000), to.registryAccess()).getString().contains(text)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** The file bytes of an asset message, or null for any other message. */
+    private static byte[] assetChunk(byte[] message) {
+        FriendlyByteBuf buf = reader(message);
+        if (buf.readVarInt() != VikaNetwork.S2C_ASSET) {
+            return null;
+        }
+        buf.readVarInt();
+        buf.readUtf(256);
+        buf.readUtf(64);
+        buf.readVarInt();
+        buf.readVarInt();
+        return buf.readByteArray();
+    }
+
+    private static List<Boolean> uploadResults(List<Sent> sent, ServerPlayer to) {
+        List<Boolean> out = new ArrayList<>();
+        for (Sent s : sent) {
+            FriendlyByteBuf buf = reader(s.bytes());
+            if (s.to() == to && buf.readVarInt() == VikaNetwork.S2C_UPLOAD_RESULT) {
+                out.add(buf.readBoolean());
+            }
+        }
+        return out;
+    }
+
+    private static byte[] assetRequest(AssetKind kind, String name) {
+        FriendlyByteBuf buf = VikaNetwork.buffer(VikaNetwork.C2S_REQUEST_ASSET);
+        buf.writeVarInt(kind.ordinal());
+        buf.writeUtf(name, 256);
+        return VikaNetwork.toBytes(buf);
+    }
+
+    private static byte[] listRequest(AssetKind kind) {
+        FriendlyByteBuf buf = VikaNetwork.buffer(VikaNetwork.C2S_REQUEST_LIST);
+        buf.writeVarInt(kind.ordinal());
+        return VikaNetwork.toBytes(buf);
+    }
+
+    private static byte[] statusRequest(int entityId) {
+        FriendlyByteBuf buf = VikaNetwork.buffer(VikaNetwork.C2S_REQUEST_STATUS);
+        buf.writeVarInt(entityId);
+        return VikaNetwork.toBytes(buf);
+    }
+
+    /** Sends a file the way a client does: in chunks, through the server's packet handler. */
+    private static void upload(ServerPlayer player, VikaEntity laura, AssetKind kind, String name, byte[] data) {
+        for (int offset = 0; offset < data.length; offset += VikaNetwork.UPLOAD_CHUNK) {
+            FriendlyByteBuf buf = VikaNetwork.buffer(VikaNetwork.C2S_UPLOAD);
+            buf.writeVarInt(kind.ordinal());
+            buf.writeUtf(name, 128);
+            buf.writeVarInt(data.length);
+            buf.writeVarInt(offset);
+            buf.writeByteArray(Arrays.copyOfRange(data, offset, Math.min(data.length, offset + VikaNetwork.UPLOAD_CHUNK)));
+            buf.writeVarInt(laura.getId());
+            buf.writeBoolean(false);
+            VikaNetwork.handleServer(player, VikaNetwork.toBytes(buf));
+        }
+    }
+
+    // ------------------------------------------------------------------ model files
+
+    /**
+     * A Blockbench project with one cube inside {@code depth} bones nested in each other, and one
+     * animation whose only value is {@code expression}.
+     */
+    private static String bbmodel(int depth, String expression) {
+        StringBuilder sb = new StringBuilder(depth * 48 + expression.length() + 512);
+        sb.append("{\"meta\":{\"box_uv\":true},\"resolution\":{\"width\":16,\"height\":16},");
+        sb.append("\"elements\":[{\"type\":\"cube\",\"uuid\":\"c1\",\"from\":[0,0,0],\"to\":[1,1,1]}],\"outliner\":[");
+        for (int i = 0; i < depth; i++) {
+            sb.append("{\"name\":\"bone").append(i).append("\",\"uuid\":\"g").append(i).append("\",\"children\":[");
+        }
+        sb.append("\"c1\"");
+        for (int i = 0; i < depth; i++) {
+            sb.append("]}");
+        }
+        sb.append("],\"animations\":[{\"name\":\"idle\",\"loop\":\"loop\",\"length\":1,\"animators\":{\"g0\":{\"name\":\"bone0\",\"type\":\"bone\",");
+        sb.append("\"keyframes\":[{\"channel\":\"rotation\",\"time\":0,\"data_points\":[{\"x\":\"").append(expression).append("\",\"y\":\"0\",\"z\":\"0\"}]}]}}}]}");
+        return sb.toString();
+    }
+
+    /** The parsed model, or null when the parser refuses the file as invalid. Anything else it throws fails the test. */
+    private static ModelData parseModel(String fileName, String json) {
+        try {
+            return ModelParser.parseChecked(fileName, json, null);
+        } catch (ModelParser.InvalidModelException e) {
+            return null;
+        }
+    }
+
+    private static byte[] rethrow(Throwable t) {
+        if (t instanceof Error error) {
+            throw error;
+        }
+        throw (RuntimeException) t;
+    }
+
+    private static void deleteQuietly(Path path) {
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException e) {
+            ViktoriaCore.LOGGER.warn("[SELFTEST] could not delete {}: {}", path, e.getMessage());
+        }
+    }
+
+    private static void resetCooldown(TestRunner.Context ctx) {
+        VikaWorldData.get(ctx.server()).meta(ctx.player().getUUID()).lastSummon = 0;
+    }
+
+    /** Summons a companion for the test player, then runs the body once she is in the world. */
+    private static void withLaura(TestRunner.Context ctx, Consumer<VikaEntity> body) {
+        ServerPlayer player = ctx.player();
+        resetCooldown(ctx);
+        VikaManager.summon(player, false);
+        ctx.waitFor("the summon", 100, () -> !VikaManager.findAll(player).isEmpty(), () -> {
+            VikaEntity laura = VikaManager.findAll(player).get(0);
+            laura.brain().needs().fillAll();
+            body.accept(laura);
+        });
+    }
+}

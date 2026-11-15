@@ -1,0 +1,23 @@
+{
+  "parent": "viktoria:laura/root",
+  "display": {
+    "icon": {
+      "id": "viktoria:laura_grave"
+    },
+    "title": {
+      "translate": "advancements.viktoria.revive.title"
+    },
+    "description": {
+      "translate": "advancements.viktoria.revive.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": true
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

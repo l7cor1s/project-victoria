@@ -1,0 +1,23 @@
+{
+  "parent": "viktoria:laura/new_look",
+  "display": {
+    "icon": {
+      "id": "minecraft:armor_stand"
+    },
+    "title": {
+      "translate": "advancements.viktoria.makeover.title"
+    },
+    "description": {
+      "translate": "advancements.viktoria.makeover.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

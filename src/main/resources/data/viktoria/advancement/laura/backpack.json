@@ -1,0 +1,23 @@
+{
+  "parent": "viktoria:laura/new_look",
+  "display": {
+    "icon": {
+      "id": "minecraft:leather"
+    },
+    "title": {
+      "translate": "advancements.viktoria.backpack.title"
+    },
+    "description": {
+      "translate": "advancements.viktoria.backpack.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

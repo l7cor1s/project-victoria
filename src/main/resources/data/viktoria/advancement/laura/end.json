@@ -1,0 +1,23 @@
+{
+  "parent": "viktoria:laura/nether",
+  "display": {
+    "icon": {
+      "id": "minecraft:end_stone"
+    },
+    "title": {
+      "translate": "advancements.viktoria.end.title"
+    },
+    "description": {
+      "translate": "advancements.viktoria.end.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "parent": "viktoria:laura/desire_fulfilled",
+  "display": {
+    "icon": {
+      "id": "minecraft:bone"
+    },
+    "title": {
+      "translate": "advancements.viktoria.desire_failed.title"
+    },
+    "description": {
+      "translate": "advancements.viktoria.desire_failed.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "parent": "viktoria:laura/feed",
+  "display": {
+    "icon": {
+      "id": "minecraft:sweet_berries"
+    },
+    "title": {
+      "translate": "advancements.viktoria.steal_food.title"
+    },
+    "description": {
+      "translate": "advancements.viktoria.steal_food.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

@@ -1,40 +1,50 @@
-### Gradle ###
-.gradle
+# Gradle
+.gradle/
 build/
+bin/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/**/build/
 
-### IntelliJ IDEA ###
+# Compiled
+*.class
+*.jar
+!**/gradle/wrapper/gradle-wrapper.jar
+__pycache__/
+
+# Logs
+*.log
+
+# IDE
 .idea/
+.vscode/
+.eclipse/
 *.iws
 *.iml
 *.ipr
 out/
-!**/src/**/out/
 
-.run/
-
-### Eclipse ###
-.apt_generated
-.classpath
-.eclipse/
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/**/bin/
-
-### VS Code ###
-.vscode/
-
-### Mac OS ###
+# OS
 .DS_Store
+Thumbs.db
 
-### Minecraft Modding ###
+# Minecraft dev runs (worlds, configs, local test models and skins)
+runs/
 run/
-!**/src/**/run/
-**/src/generated/**/.cache/
-repo/
-!**/src/**/repo/
+run-*/
+
+# Local only
+.claude/
+CLAUDE.md
+test-procedures/
+TEST_PROCEDURE_*.html
+_temp/
+
+# Local development journal
+ERROR_LOG.md
+
+# Built jars collected by tools/collect_jars.sh
+jars/
+
+# Page images: recording folder, script caches, generated pictures (hosted in Team-Arcadia/images)
+images/*
+!images/tools/

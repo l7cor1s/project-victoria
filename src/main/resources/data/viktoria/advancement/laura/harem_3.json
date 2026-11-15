@@ -1,0 +1,23 @@
+{
+  "parent": "viktoria:laura/harem",
+  "display": {
+    "icon": {
+      "id": "minecraft:bell"
+    },
+    "title": {
+      "translate": "advancements.viktoria.harem_3.title"
+    },
+    "description": {
+      "translate": "advancements.viktoria.harem_3.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

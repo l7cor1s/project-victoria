@@ -1,0 +1,23 @@
+{
+  "parent": "viktoria:laura/root",
+  "display": {
+    "icon": {
+      "id": "minecraft:hay_block"
+    },
+    "title": {
+      "translate": "advancements.viktoria.gag.title"
+    },
+    "description": {
+      "translate": "advancements.viktoria.gag.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

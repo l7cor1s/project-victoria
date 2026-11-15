@@ -1,0 +1,23 @@
+{
+  "parent": "viktoria:laura/root",
+  "display": {
+    "icon": {
+      "id": "minecraft:water_bucket"
+    },
+    "title": {
+      "translate": "advancements.viktoria.bath.title"
+    },
+    "description": {
+      "translate": "advancements.viktoria.bath.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

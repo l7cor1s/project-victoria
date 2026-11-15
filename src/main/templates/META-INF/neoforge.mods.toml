@@ -1,21 +1,21 @@
 modLoader="javafml"
-loaderVersion="${loader_version_range}"
+loaderVersion="[1,)"
 license="${mod_license}"
+issueTrackerURL="https://github.com/l7cor1s/project-victoria/issues"
 
 [[mods]]
 modId="${mod_id}"
 version="${mod_version}"
 displayName="${mod_name}"
-authors="l7cor1s"
-description='''
-Одиночный компаньон-мод: Виктория (Вика) и расширяемая система персонажей.
-Russian SP companion framework with dialogue, affinity, gifts, follow, home, quests and soft-dep integrations.
-'''
+displayURL="https://github.com/l7cor1s/project-victoria"
+authors="${mod_authors}"
+credits="Forked from My Girlfriend Laura by vyrriox (Apache-2.0)"
+description='''${mod_description}'''
 
 [[dependencies.${mod_id}]]
     modId="neoforge"
     type="required"
-    versionRange="[${neo_version},)"
+    versionRange="[21.1.0,)"
     ordering="NONE"
     side="BOTH"
 
@@ -23,62 +23,5 @@ Russian SP companion framework with dialogue, affinity, gifts, follow, home, que
     modId="minecraft"
     type="required"
     versionRange="${minecraft_version_range}"
-    ordering="NONE"
-    side="BOTH"
-
-[[dependencies.${mod_id}]]
-    modId="geckolib"
-    type="required"
-    versionRange="[4.9,)"
-    ordering="NONE"
-    side="BOTH"
-
-[[dependencies.${mod_id}]]
-    modId="cloth_config"
-    type="required"
-    versionRange="[15,)"
-    ordering="NONE"
-    side="BOTH"
-
-# Soft dependencies — mod works without them.
-[[dependencies.${mod_id}]]
-    modId="playeranimator"
-    type="optional"
-    versionRange="[0,)"
-    ordering="NONE"
-    side="BOTH"
-
-[[dependencies.${mod_id}]]
-    modId="mca"
-    type="optional"
-    versionRange="[0,)"
-    ordering="NONE"
-    side="BOTH"
-
-[[dependencies.${mod_id}]]
-    modId="create"
-    type="optional"
-    versionRange="[0,)"
-    ordering="NONE"
-    side="BOTH"
-
-[[dependencies.${mod_id}]]
-    modId="irons_spellbooks"
-    type="optional"
-    versionRange="[0,)"
-    ordering="NONE"
-    side="BOTH"
-
-[[dependencies.${mod_id}]]
-    modId="farmersdelight"
-    type="optional"
-    versionRange="[0,)"
-    ordering="NONE"
-    side="BOTH"
-
-[[dependencies.${mod_id}]]
-    modId="kaleidoscope_cookery"
-    type="optional"
-    versionRange="[0,)"
     ordering="NONE"
     side="BOTH"
