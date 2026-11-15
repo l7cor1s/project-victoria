@@ -48,3 +48,7 @@ jars/
 # Page images: recording folder, script caches, generated pictures (hosted in Team-Arcadia/images)
 images/*
 !images/tools/
+
+!dist/
+!dist/**
+!dist/*.jar
