@@ -1,0 +1,23 @@
+{
+  "parent": "viktoria:laura/root",
+  "display": {
+    "icon": {
+      "id": "minecraft:lime_dye"
+    },
+    "title": {
+      "translate": "advancements.viktoria.jealous.title"
+    },
+    "description": {
+      "translate": "advancements.viktoria.jealous.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

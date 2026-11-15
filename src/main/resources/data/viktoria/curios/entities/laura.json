@@ -1,0 +1,14 @@
+{
+  "entities": [
+    "viktoria:laura"
+  ],
+  "slots": [
+    "necklace",
+    "ring",
+    "bracelet",
+    "charm",
+    "head",
+    "back",
+    "belt"
+  ]
+}

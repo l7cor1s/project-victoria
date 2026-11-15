@@ -1,0 +1,221 @@
+{
+  "laura_ambient": {
+    "category": "neutral",
+    "subtitle": "subtitles.viktoria.laura_ambient",
+    "sounds": [
+      {
+        "name": "viktoria:laura_ambient_1"
+      },
+      {
+        "name": "viktoria:laura_ambient_2"
+      },
+      {
+        "name": "viktoria:laura_ambient_3"
+      },
+      {
+        "name": "viktoria:laura_ambient_4"
+      },
+      {
+        "name": "viktoria:laura_ambient_5"
+      },
+      {
+        "name": "viktoria:laura_ambient_6"
+      }
+    ]
+  },
+  "laura_fart": {
+    "category": "neutral",
+    "subtitle": "subtitles.viktoria.laura_fart",
+    "sounds": [
+      {
+        "name": "viktoria:laura_fart_1"
+      }
+    ]
+  },
+  "laura_happy": {
+    "category": "neutral",
+    "subtitle": "subtitles.viktoria.laura_happy",
+    "sounds": [
+      {
+        "name": "viktoria:laura_happy_1"
+      },
+      {
+        "name": "viktoria:laura_ambient_5"
+      }
+    ]
+  },
+  "laura_sad": {
+    "category": "neutral",
+    "subtitle": "subtitles.viktoria.laura_sad",
+    "sounds": [
+      {
+        "name": "viktoria:laura_sad_1"
+      }
+    ]
+  },
+  "laura_angry": {
+    "category": "neutral",
+    "subtitle": "subtitles.viktoria.laura_angry",
+    "sounds": [
+      {
+        "name": "viktoria:laura_angry_1"
+      },
+      {
+        "name": "viktoria:laura_angry_2"
+      }
+    ]
+  },
+  "laura_muffled": {
+    "category": "neutral",
+    "subtitle": "subtitles.viktoria.laura_muffled",
+    "sounds": [
+      {
+        "name": "viktoria:laura_muffled_1"
+      },
+      {
+        "name": "viktoria:laura_muffled_2"
+      },
+      {
+        "name": "viktoria:laura_muffled_3"
+      }
+    ]
+  },
+  "laura_clap": {
+    "category": "neutral",
+    "subtitle": "subtitles.viktoria.laura_clap",
+    "sounds": [
+      {
+        "name": "viktoria:laura_clap_1"
+      },
+      {
+        "name": "viktoria:laura_clap_2"
+      },
+      {
+        "name": "viktoria:laura_clap_3"
+      }
+    ]
+  },
+  "laura_snap": {
+    "category": "neutral",
+    "subtitle": "subtitles.viktoria.laura_snap",
+    "sounds": [
+      {
+        "name": "viktoria:laura_snap_1"
+      },
+      {
+        "name": "viktoria:laura_snap_2"
+      }
+    ]
+  },
+  "laura_tap": {
+    "category": "neutral",
+    "subtitle": "subtitles.viktoria.laura_tap",
+    "sounds": [
+      {
+        "name": "viktoria:laura_tap_1"
+      },
+      {
+        "name": "viktoria:laura_tap_2"
+      }
+    ]
+  },
+  "laura_whoosh": {
+    "category": "neutral",
+    "subtitle": "subtitles.viktoria.laura_whoosh",
+    "sounds": [
+      {
+        "name": "viktoria:laura_whoosh_1"
+      }
+    ]
+  },
+  "laura_kiss": {
+    "category": "neutral",
+    "subtitle": "subtitles.viktoria.laura_kiss",
+    "sounds": [
+      {
+        "name": "viktoria:laura_kiss_1"
+      },
+      {
+        "name": "viktoria:laura_kiss_2"
+      }
+    ]
+  },
+  "laura_hiccup": {
+    "category": "neutral",
+    "subtitle": "subtitles.viktoria.laura_hiccup",
+    "sounds": [
+      {
+        "name": "viktoria:laura_hiccup_1"
+      }
+    ]
+  },
+  "laura_chatter": {
+    "category": "neutral",
+    "subtitle": "subtitles.viktoria.laura_chatter",
+    "sounds": [
+      {
+        "name": "viktoria:laura_chatter_1"
+      },
+      {
+        "name": "viktoria:laura_chatter_2"
+      },
+      {
+        "name": "viktoria:laura_chatter_3"
+      },
+      {
+        "name": "viktoria:laura_chatter_4"
+      }
+    ]
+  },
+  "laura_hmph": {
+    "category": "neutral",
+    "subtitle": "subtitles.viktoria.laura_hmph",
+    "sounds": [
+      {
+        "name": "viktoria:laura_hmph_1"
+      },
+      {
+        "name": "viktoria:laura_hmph_2"
+      }
+    ]
+  },
+  "laura_sigh": {
+    "category": "neutral",
+    "subtitle": "subtitles.viktoria.laura_sigh",
+    "sounds": [
+      {
+        "name": "viktoria:laura_sigh_1"
+      }
+    ]
+  },
+  "laura_sparkle": {
+    "category": "neutral",
+    "subtitle": "subtitles.viktoria.laura_sparkle",
+    "sounds": [
+      {
+        "name": "viktoria:laura_sparkle_1"
+      }
+    ]
+  },
+  "laura_yawn": {
+    "category": "neutral",
+    "subtitle": "subtitles.viktoria.laura_yawn",
+    "sounds": [
+      {
+        "name": "viktoria:laura_yawn_1"
+      }
+    ]
+  },
+  "laura_laugh": {
+    "category": "neutral",
+    "subtitle": "subtitles.viktoria.laura_laugh",
+    "sounds": [
+      {
+        "name": "viktoria:laura_laugh_1"
+      },
+      {
+        "name": "viktoria:laura_laugh_2"
+      }
+    ]
+  }
+}

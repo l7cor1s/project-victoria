@@ -1,0 +1,23 @@
+{
+  "parent": "viktoria:laura/relation_close",
+  "display": {
+    "icon": {
+      "id": "viktoria:laura_heart"
+    },
+    "title": {
+      "translate": "advancements.viktoria.relation_love.title"
+    },
+    "description": {
+      "translate": "advancements.viktoria.relation_love.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

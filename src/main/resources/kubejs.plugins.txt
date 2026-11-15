@@ -1,0 +1,1 @@
+com.l7cor1s.viktoria.neoforge.compat.VikaKubeJSPlugin

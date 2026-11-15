@@ -1,0 +1,23 @@
+{
+  "parent": "viktoria:laura/new_look",
+  "display": {
+    "icon": {
+      "id": "minecraft:gold_ingot"
+    },
+    "title": {
+      "translate": "advancements.viktoria.curio.title"
+    },
+    "description": {
+      "translate": "advancements.viktoria.curio.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}
