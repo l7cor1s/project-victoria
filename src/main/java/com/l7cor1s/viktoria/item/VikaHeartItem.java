@@ -22,7 +22,7 @@ import net.minecraft.world.level.Level;
 import java.util.List;
 
 /**
- * Laura's Heart: cook a pink tulip in a furnace, then use it to summon Laura. If she is already
+ * Vika's Heart: cook a pink tulip in a furnace, then use it to summon Laura. If she is already
  * with you, the heart calls her back and makes her very, very happy.
  *
  * @author vyrriox

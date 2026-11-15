@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Farmer's Delight cooking pots for Laura's cook job. Only loaded when Farmer's Delight is installed.
+ * Farmer's Delight cooking pots for Vika's cook job. Only loaded when Farmer's Delight is installed.
  *
  * @author vyrriox
  */

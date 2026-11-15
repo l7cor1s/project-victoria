@@ -201,7 +201,7 @@ public final class ClientSelfTest {
         }));
         STEPS.add(() -> wave(mc));
         STEPS.add(() -> shot(mc, "default_wave"));
-        // Custom model check: config/viktoria/models/test_fr.bbmodel, when present, has French bone
+        // Custom model check: config/projectvika/models/test_fr.bbmodel, when present, has French bone
         // names, a nose on its front, a blue right arm and no animation. It shows the borrowed
         // default animations (the same wave, on "bras_d") and the bone lookup (hay on "tete", bag
         // on "corps").

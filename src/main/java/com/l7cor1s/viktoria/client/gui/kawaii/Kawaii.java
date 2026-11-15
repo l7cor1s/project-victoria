@@ -1,7 +1,7 @@
 package com.l7cor1s.viktoria.client.gui.kawaii;
 
 /**
- * The pastel palette and the drawing primitives of Laura's screens: rounded panels, pills, pixel
+ * The pastel palette and the drawing primitives of Vika's screens: rounded panels, pills, pixel
  * hearts, soft shadows, progress bars.
  *
  * @author vyrriox

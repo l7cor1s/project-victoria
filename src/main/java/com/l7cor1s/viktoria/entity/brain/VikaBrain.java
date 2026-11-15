@@ -37,7 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Laura's personality: needs, mood, desires, nagging and reactions. Ticked once per second on the
+ * Vika's personality: needs, mood, desires, nagging and reactions. Ticked once per second on the
  * server by {@link VikaEntity}.
  *
  * @author vyrriox
@@ -250,7 +250,7 @@ public final class VikaBrain {
 
     /**
      * Water washes her wherever it comes from: the bath she takes by herself, a pool her partner
-     * leads or pushes her into, the rain. Once enough of it ran over a Laura who was not perfectly
+     * leads or pushes her into, the rain. Once enough of it ran over a Vika who was not perfectly
      * clean, she has had her bath.
      */
     private void tickBath(boolean needsOn) {

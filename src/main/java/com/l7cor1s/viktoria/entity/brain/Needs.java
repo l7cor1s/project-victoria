@@ -5,7 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 import java.util.Locale;
 
 /**
- * Laura's five needs, from 0 (desperate) to 100 (satisfied).
+ * Vika's five needs, from 0 (desperate) to 100 (satisfied).
  *
  * @author vyrriox
  */

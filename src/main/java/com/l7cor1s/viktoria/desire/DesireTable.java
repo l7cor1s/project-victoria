@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * The pool of things Laura can desire, from {@code config/viktoria/desires.json}.
+ * The pool of things Laura can desire, from {@code config/projectvika/desires.json}.
  *
  * @author vyrriox
  */
@@ -204,7 +204,7 @@ public final class DesireTable {
     }
 
     private static final String DEFAULTS = """
-            // My Girlfriend Laura - what she can desire.
+            // Project Vika - what she can desire.
             // categoryWeights: how often each kind of desire is picked.
             // items: "eat": true means you must feed it to her, otherwise giving it is enough.
             // places: "biomes" accepts biome ids, #biome_tags and dimension:<id> (for example dimension:minecraft:the_nether).

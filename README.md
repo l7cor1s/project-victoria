@@ -1,7 +1,17 @@
-# Viktoria (Вика)
+# Project Vika (Вика)
 
 NeoForge **1.21.1** companion: office colleague **Вика**.  
 Adaptation of [My Girlfriend Laura](https://github.com/laforetbrut/mods-mc-laura) (Apache-2.0).
+
+## Art
+
+![Вика — face](docs/art/vika-face.png)
+
+![Вика — skin preview](docs/art/vika-skin-preview.png)
+
+![Вика — torso UV](docs/art/vika-torso.png)
+
+Embedded model: `assets/viktoria/vika_models/Vika.{geo.json,animation.json,png}` (256×256, Classic UV space 64).
 
 ## Build
 
@@ -13,9 +23,11 @@ Jar: `build/libs/viktoria-neoforge-1.21.1-0.2.0.jar` (also `dist/`).
 
 ## Play
 
-- `/vika summon` (aliases `/viktoria`, `/laura`) or **Сердце Вики**
-- Follow, menu, gifts, jobs, skins — Laura systems, rebranded
-- Default model: `pack:Vika` → `assets/viktoria/vika_models/Vika.{geo.json,animation.json,png}` (256×256)
+- Unique companion: only one Vika in the world
+- Natural spawn on first join (`summoning.naturalSpawn` in config) or `/vika summon` (teleports if she already exists)
+- Death: TIMER revive by default (`general.reviveMode`)
+- Follow radius: `follow.radius` in `config/projectvika/projectvika-common.json`
+- Extra models: `config/projectvika/models/uploads/`
 
 ## Character
 

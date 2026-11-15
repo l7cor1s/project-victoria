@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Gifts, food preferences and the gifts Laura gives back, from {@code config/viktoria/gifts.json}.
+ * Gifts, food preferences and the gifts Laura gives back, from {@code config/projectvika/gifts.json}.
  *
  * @author vyrriox
  */
@@ -237,7 +237,7 @@ public final class GiftTable {
     }
 
     private static final String DEFAULTS = """
-            // My Girlfriend Laura - gifts and food.
+            // Project Vika - gifts and food.
             // "match" is an item id, an #item_tag or @music_disc (any item a jukebox can play).
             // The first matching entry is used.
             // affection: -1000 to 1000. fun: 0 to 100. tier: GROSS, MEH, NICE, GREAT or AMAZING (picks her reaction).

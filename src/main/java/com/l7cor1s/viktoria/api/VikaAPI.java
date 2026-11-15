@@ -138,7 +138,7 @@ public final class VikaAPI {
         ScriptData.requestReload();
     }
 
-    /** Dialogues for a language, like a file of config/viktoria/dialogues: { lines, intents, items, chests }. */
+    /** Dialogues for a language, like a file of config/projectvika/dialogues: { lines, intents, items, chests }. */
     public static void addDialogue(String locale, Object json) {
         if (ScriptData.toJson(json) instanceof com.google.gson.JsonObject o) {
             ScriptData.addDialogue(locale.toLowerCase(Locale.ROOT), o);
@@ -187,7 +187,7 @@ public final class VikaAPI {
         addDialogue(locale, root);
     }
 
-    /** Reloads Laura's config, dialogues and tables on the next server tick. */
+    /** Reloads Vika's config, dialogues and tables on the next server tick. */
     public static void reload() {
         ScriptData.requestReload();
     }

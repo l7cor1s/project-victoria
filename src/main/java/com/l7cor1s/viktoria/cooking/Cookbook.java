@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Laura's cookbook: the meals she can prepare at a crafting table, from
- * {@code config/viktoria/recipes.json}. Cooking raw food in furnaces, smokers and campfires uses the
+ * Vika's cookbook: the meals she can prepare at a crafting table, from
+ * {@code config/projectvika/recipes.json}. Cooking raw food in furnaces, smokers and campfires uses the
  * game's own recipes and needs no entry here.
  *
  * @author vyrriox
@@ -158,7 +158,7 @@ public final class Cookbook {
     }
 
     private static final String DEFAULTS = """
-            // My Girlfriend Laura - cookbook.
+            // Project Vika - cookbook.
             // Meals she prepares at a crafting table (set requireCraftingTable to false to let her cook anywhere).
             // Raw meat, fish and potatoes are cooked in furnaces, smokers and campfires with the game's own
             // recipes: they do not need an entry here.

@@ -10,8 +10,11 @@ import org.slf4j.LoggerFactory;
  * @author vyrriox
  */
 public final class ViktoriaCore {
+    /** Registry / resource namespace. Kept as {@code viktoria} so existing worlds and packs stay valid. */
     public static final String MODID = "viktoria";
-    public static final String NAME = "My Girlfriend Laura";
+    /** On-disk config folder: {@code config/projectvika/}. */
+    public static final String CONFIG_FOLDER = "projectvika";
+    public static final String NAME = "Project Vika";
     public static final Logger LOGGER = LoggerFactory.getLogger(MODID);
 
     private ViktoriaCore() {

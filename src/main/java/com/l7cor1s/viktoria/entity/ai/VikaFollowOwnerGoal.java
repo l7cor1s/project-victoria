@@ -37,7 +37,7 @@ public class VikaFollowOwnerGoal extends Goal {
     }
 
     private double startDistance() {
-        double start = VikaConfig.followStartDistance.getDouble();
+        double start = VikaConfig.followRadius.getDouble();
         return clingy() ? Math.min(start, 2.5) : start;
     }
 

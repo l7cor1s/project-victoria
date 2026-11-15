@@ -31,7 +31,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import java.util.Optional;
 
 /**
- * Laura's Gravestone. When she dies, lay a flower on it (right click) to bring her back.
+ * Vika's Gravestone. When she dies, lay a flower on it (right click) to bring her back.
  *
  * @author vyrriox
  */

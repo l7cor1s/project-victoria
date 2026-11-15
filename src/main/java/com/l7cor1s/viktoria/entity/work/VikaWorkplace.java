@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 /**
- * Everything about Laura's work: assigned containers, active jobs with their areas, and the queue of
+ * Everything about Vika's work: assigned containers, active jobs with their areas, and the queue of
  * errands she has been asked to do.
  *
  * @author vyrriox

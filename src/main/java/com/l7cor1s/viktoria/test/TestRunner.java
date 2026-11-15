@@ -16,7 +16,7 @@ import java.util.function.BooleanSupplier;
 
 /**
  * Runs the tests one after the other on the server thread. Each test gets a fresh stone platform
- * and a fake player that owns the Laura it summons.
+ * and a fake player that owns the Vika it summons.
  *
  * @author vyrriox
  */

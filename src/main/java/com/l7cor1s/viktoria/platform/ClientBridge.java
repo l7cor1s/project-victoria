@@ -17,7 +17,7 @@ public interface ClientBridge {
     default void openInteractionScreen(VikaEntity laura) {
     }
 
-    /** True when the local player is currently looking at a Laura menu or screen. */
+    /** True when the local player is currently looking at a Vika menu or screen. */
     default boolean isScreenOpen() {
         return false;
     }

@@ -25,8 +25,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Skins and models hosted by the server in {@code config/viktoria/skins} and
- * {@code config/viktoria/models}. In singleplayer this is the player's own folder, so local files
+ * Skins and models hosted by the server in {@code config/projectvika/skins} and
+ * {@code config/projectvika/models}. In singleplayer this is the player's own folder, so local files
  * just work; on a server, clients download them on demand.
  *
  * @author vyrriox
@@ -380,11 +380,11 @@ public final class ServerAssetStore {
     }
 
     private static final String SKIN_README = """
-            My Girlfriend Laura - server skins
+            Project Vika - server skins
             ===================================
 
             Drop Minecraft skin files (PNG, 64x64, 64x32 or HD multiples like 128x128) in this folder.
-            Players pick them in Laura's skin screen, or with /laura skin file <name>.
+            Players pick them in Vika's skin screen, or with /laura skin file <name>.
             Every client downloads the file from the server, so everybody sees the same Laura.
 
             Sub-folders are allowed (their path becomes part of the name).
@@ -394,7 +394,7 @@ public final class ServerAssetStore {
             """;
 
     private static final String MODEL_README = """
-            My Girlfriend Laura - custom models (Blockbench)
+            Project Vika - custom models (Blockbench)
             ================================================
 
             Supported formats:
@@ -404,7 +404,7 @@ public final class ServerAssetStore {
                 <name>.png                texture next to it
               - <name>/                   a folder holding one of the above
 
-            Players pick a model in Laura's menu or with /laura model <name>.
+            Players pick a model in Vika's menu or with /laura model <name>.
             Clients download models from the server, so everybody sees the same Laura.
 
             Animation names are matched by their last part: "animation.laura.walk" is used for walking.

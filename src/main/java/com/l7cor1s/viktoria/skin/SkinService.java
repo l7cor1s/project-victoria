@@ -70,25 +70,13 @@ public final class SkinService {
         }
     }
 
-    /** Gives her the default model of the config: a server file (with its current hash) or a resource pack model. */
+    /**
+     * Always applies the embedded Vika model shipped in the mod jar ({@code pack:Vika}).
+     * Extra models in {@code config/projectvika/models/uploads/} stay available for players to pick later.
+     */
     public static void applyDefaultModel(VikaEntity laura) {
-        String name = VikaConfig.defaultModel.get() == null ? "" : VikaConfig.defaultModel.get().trim();
-        if (name.isEmpty() || !VikaConfig.allowCustomModels.get()) {
-            laura.setModel("");
-            return;
-        }
-        boolean pack = name.startsWith("pack:");
-        String plain = pack ? name.substring(5) : name.startsWith("server:") ? name.substring(7) : name;
-        int hash = plain.indexOf('#');
-        if (hash > 0) {
-            plain = plain.substring(0, hash);
-        }
-        if (!ServerAssetStore.isSafeName(plain)) {
-            laura.setModel("");
-            return;
-        }
-        ServerAssetStore.Entry entry = pack ? null : entry(AssetKind.MODEL, plain);
-        laura.setModel(entry == null ? "pack:" + plain : "server:" + entry.name() + "#" + entry.sha1());
+        laura.setModel("pack:Vika");
+        ViktoriaCore.LOGGER.info("Applied embedded default model pack:Vika to {}", laura.getUUID());
     }
 
     /** A server file by name, looking again in the folder if it was added since the last scan. */

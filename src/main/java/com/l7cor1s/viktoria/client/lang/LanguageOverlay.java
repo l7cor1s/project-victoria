@@ -17,7 +17,7 @@ import java.util.Map;
 
 /**
  * Lets players add or override translations without a resource pack: every
- * {@code config/viktoria/lang/<language>.json} file is layered on top of the game's language (for
+ * {@code config/projectvika/lang/<language>.json} file is layered on top of the game's language (for
  * this mod's keys and any other key). Installed after each resource reload.
  *
  * @author vyrriox
@@ -127,7 +127,7 @@ public final class LanguageOverlay extends Language {
     }
 
     private static final String README = """
-            My Girlfriend Laura - custom translations
+            Project Vika - custom translations
             ==========================================
 
             Put a <language>.json file here (for example fr_fr.json, ja_jp.json, eo_uy.json) with the keys you want
@@ -142,7 +142,7 @@ public final class LanguageOverlay extends Language {
             This works for the mod's own keys and for any other key of the game or of other mods.
             The full list of the mod's keys is in the mod jar: assets/viktoria/lang/en_us.json.
 
-            Laura's spoken lines are not here: they live in config/viktoria/dialogues (see the README there).
+            Vika's spoken lines are not here: they live in config/projectvika/dialogues (see the README there).
             Changes are applied when resources are reloaded (F3 + T) or when you change language.
             """;
 }

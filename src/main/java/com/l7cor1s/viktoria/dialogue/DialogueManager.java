@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Loads dialogue files and answers "what does Laura say" questions.
  * <p>
  * Built-in files live in the mod jar under {@code data/viktoria/dialogues/<locale>.json}. Files
- * dropped in {@code config/viktoria/dialogues/<locale>.json} are merged on top (or replace them, see
+ * dropped in {@code config/projectvika/dialogues/<locale>.json} are merged on top (or replace them, see
  * {@link VikaConfig#customDialoguesReplace}). A file for a language the mod does not ship simply
  * adds that language.
  *
@@ -500,7 +500,7 @@ public final class DialogueManager {
     }
 
     private static final String README = """
-            My Girlfriend Laura - custom dialogues
+            Project Vika - custom dialogues
             =======================================
 
             Put a file named <language>.json in this folder (for example fr_fr.json, en_us.json, ja_jp.json).

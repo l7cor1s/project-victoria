@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * World-wide registry of every Laura (stored in the overworld data folder, file name kept from
+ * World-wide registry of every Vika (stored in the overworld data folder, file name kept from
  * version 1.x). Each record is one companion bound to the player who summoned her; a player can
  * have several. Lets commands and chat find them anywhere, keeps them while they wait on a grave
  * and restores them if they get lost.

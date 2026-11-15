@@ -3,7 +3,7 @@ package com.l7cor1s.viktoria.entity;
 import java.util.Locale;
 
 /**
- * Laura's current mood, derived from her needs, her affection and recent events.
+ * Vika's current mood, derived from her needs, her affection and recent events.
  *
  * @author vyrriox
  */

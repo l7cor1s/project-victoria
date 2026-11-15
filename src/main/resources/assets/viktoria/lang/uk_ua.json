@@ -212,9 +212,9 @@
   "viktoria.menu.style.skins": "Скіни",
   "viktoria.menu.style.models": "Моделі",
   "viktoria.menu.skin.server_files": "Скіни сервера",
-  "viktoria.menu.skin.server_files.help": "Скіни з теки config/viktoria/skins на сервері",
+  "viktoria.menu.skin.server_files.help": "Скіни з теки config/projectvika/skins на сервері",
   "viktoria.menu.skin.local_files": "Твої скіни",
-  "viktoria.menu.skin.local_files.help": "PNG-файли з твоєї теки config/viktoria/skins. Натисни на файл, щоб надіслати його.",
+  "viktoria.menu.skin.local_files.help": "PNG-файли з твоєї теки config/projectvika/skins. Натисни на файл, щоб надіслати його.",
   "viktoria.menu.skin.slim": "Тонкі руки",
   "viktoria.menu.skin.reset": "Звичайний скін",
   "viktoria.menu.skin.url": "Посилання на скін (NameMC, Imgur...)",
@@ -224,7 +224,7 @@
   "viktoria.menu.model.default": "Звичайна модель",
   "viktoria.menu.model.folder": "Відкрити теку моделей",
   "viktoria.menu.model.upload": "Завантажити %s",
-  "viktoria.menu.model.hint": "Поклади файли .bbmodel або .geo.json у config/viktoria/models на сервері або перетягни файл .bbmodel у це вікно.",
+  "viktoria.menu.model.hint": "Поклади файли .bbmodel або .geo.json у config/projectvika/models на сервері або перетягни файл .bbmodel у це вікно.",
   "viktoria.menu.rename": "Перейменувати",
   "viktoria.menu.rename.hint": "Її ім'я",
   "viktoria.menu.config_folder": "Тека налаштувань",
@@ -448,7 +448,7 @@
   "viktoria.skin.reset": "Знову її звичайний скін.",
   "viktoria.skin.not_allowed": "Тобі не можна змінювати її образ.",
   "viktoria.look.cooldown": "Не так швидко: зачекай кілька секунд, перш ніж знову змінювати її вигляд.",
-  "viktoria.network.server_missing": "My Girlfriend Laura не встановлено на цьому сервері. Мод потрібен з обох боків: попроси сервер додати його або прибери його зі своєї теки mods, щоб грати тут.",
+  "viktoria.network.server_missing": "Project Vika не встановлено на цьому сервері. Мод потрібен з обох боків: попроси сервер додати його або прибери його зі своєї теки mods, щоб грати тут.",
   "viktoria.skin.url_disabled": "Скіни за посиланнями вимкнено на цьому сервері.",
   "viktoria.skin.url_refused": "Цей сайт не дозволено. Дозволені: %s",
   "viktoria.skin.file_missing": "На сервері немає скіна з назвою %s.",
@@ -485,5 +485,5 @@
   "viktoria.release.confirm": "Це не можна скасувати: %s піде назавжди й покине свої речі. Введи /laura release confirm, щоб продовжити.",
   "viktoria.release.done": "%s пішла назавжди.",
   "viktoria.upload.quota": "У тебе вже %s файлів цього типу на сервері. Заміни один із них (те саме ім'я файлу) або попроси адміна видалити один.",
-  "viktoria.upload.bbmodel_only": "Звідси можна надсилати лише файли .bbmodel (вони містять текстури). Моделі .geo.json поклади в теку сервера config/viktoria/models."
+  "viktoria.upload.bbmodel_only": "Звідси можна надсилати лише файли .bbmodel (вони містять текстури). Моделі .geo.json поклади в теку сервера config/projectvika/models."
 }

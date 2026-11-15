@@ -97,7 +97,7 @@ public final class VikaManager {
             try {
                 r.run();
             } catch (RuntimeException e) {
-                ViktoriaCore.LOGGER.error("Scheduled Laura task failed", e);
+                ViktoriaCore.LOGGER.error("Scheduled Vika task failed", e);
             }
         }
         if (server.getTickCount() % 10 == 0) {
@@ -443,7 +443,10 @@ public final class VikaManager {
         return max <= 0 || data.countForLimit() < max;
     }
 
-    /** Summons a new companion, or calls the existing ones when the player already has the maximum. */
+    /**
+     * Brings the unique Vika to the player. If she already exists anywhere in the world, she is
+     * teleported (never duplicated). Only creates a new companion when the world has none.
+     */
     public static void summon(ServerPlayer player, boolean viaChat) {
         MinecraftServer server = player.getServer();
         if (server == null) {
@@ -474,18 +477,22 @@ public final class VikaManager {
                 return;
             }
         }
-        if (mine.size() >= VikaConfig.maxPerPlayer.getInt()) {
+        // Unique Vika: any existing record (this player or the whole world) is teleported, never cloned.
+        List<VikaWorldData.Record> existing = mine.isEmpty() ? new ArrayList<>(data.all()) : mine;
+        if (!existing.isEmpty()) {
             if (viaChat) {
-                // Proximity chat: far away companions cannot hear the call.
                 VikaEntity nearest = findNear(player, VikaConfig.chatRange.getInt());
                 if (nearest != null) {
                     VikaSpeech.say(nearest, player, "already_here", LineFormatter.values());
-                } else {
-                    player.sendSystemMessage(Component.translatable("viktoria.summon.max", VikaConfig.maxPerPlayer.getInt()));
+                    return;
                 }
-                return;
             }
-            callEveryone(player, mine);
+            callEveryone(player, existing);
+            return;
+        }
+        VikaEntity living = findAnyLiving(server);
+        if (living != null) {
+            teleportExistingTo(player, living);
             return;
         }
         VikaWorldData.OwnerMeta meta = data.meta(player.getUUID());
@@ -508,20 +515,54 @@ public final class VikaManager {
         meta.lastSummon = now;
         meta.selected = laura.getUUID();
         data.setDirty();
-        VikaSpeech.say(laura, player, mine.isEmpty() ? "summon" : "summon.another", LineFormatter.values());
+        VikaSpeech.say(laura, player, "summon", LineFormatter.values());
         com.l7cor1s.viktoria.api.VikaAPI.fire("summon", laura, player, "");
         offerRename(player, laura);
         VikaAdvancements.award(player, "root");
-        if (!mine.isEmpty()) {
-            VikaAdvancements.award(player, "harem");
+    }
+
+    /** Teleports an already-living Vika to the player and binds her if she had no owner. */
+    private static void teleportExistingTo(ServerPlayer player, VikaEntity laura) {
+        if (!roomOrTell(player, player.blockPosition())) {
+            return;
         }
-        if (mine.size() >= 2) {
-            VikaAdvancements.award(player, "harem_3");
+        if (laura.getOwnerUUID() == null) {
+            bind(laura, player);
         }
+        VikaEntity moved = teleport(laura, player.serverLevel(), player.blockPosition());
+        if (moved == null) {
+            VikaSpeech.tell(laura, player, "stuck", LineFormatter.values());
+            return;
+        }
+        data(player.getServer()).meta(player.getUUID()).selected = moved.getUUID();
+        data(player.getServer()).setDirty();
+        player.sendSystemMessage(Component.translatable("viktoria.summon.everyone_coming"));
+        VikaSpeech.say(moved, player, "summon.back", LineFormatter.values());
+    }
+
+    /** Any living Vika entity currently loaded on the server. */
+    @Nullable
+    private static VikaEntity findAnyLiving(MinecraftServer server) {
+        for (ServerLevel level : server.getAllLevels()) {
+            for (Entity entity : level.getAllEntities()) {
+                if (entity instanceof VikaEntity laura && laura.isAlive() && !laura.isRemoved()) {
+                    return laura;
+                }
+            }
+        }
+        return null;
+    }
+
+    /** True when the world already has a Vika record or a living entity. */
+    public static boolean worldHasVika(MinecraftServer server) {
+        if (!data(server).all().isEmpty()) {
+            return true;
+        }
+        return findAnyLiving(server) != null;
     }
 
     /**
-     * "Come" (command, call key, Laura's Heart) when none of the player's companions is loaded:
+     * "Come" (command, call key, Vika's Heart) when none of the player's companions is loaded:
      * brings back the ones she has, wherever they are. A new companion is only created when she has
      * none at all; more companions are asked for with the summon command or the chat phrase.
      */
@@ -634,7 +675,7 @@ public final class VikaManager {
             return null;
         }
         if (!level.addFreshEntity(laura)) {
-            ViktoriaCore.LOGGER.warn("Could not add a Laura to the world (duplicate UUID)");
+            ViktoriaCore.LOGGER.warn("Could not add a Vika to the world (duplicate UUID)");
             return null;
         }
         level.sendParticles(ParticleTypes.END_ROD, laura.getX(), laura.getY() + 1, laura.getZ(), 30, 0.4, 0.6, 0.4, 0.05);
@@ -667,7 +708,7 @@ public final class VikaManager {
     /** Clickable invitation to give a freshly summoned companion her own name. */
     public static void offerRename(ServerPlayer player, VikaEntity laura) {
         player.sendSystemMessage(Component.translatable("viktoria.rename.offer", laura.getLauraName()).withStyle(ChatFormatting.GRAY)
-                .append(" ").append(ChatButtons.suggest(Component.translatable("viktoria.rename.button"), "/laura name ", ChatFormatting.LIGHT_PURPLE)));
+                .append(" ").append(ChatButtons.suggest(Component.translatable("viktoria.rename.button"), "/vika name ", ChatFormatting.LIGHT_PURPLE)));
     }
 
     public static void initDefaults(VikaEntity laura, ServerPlayer owner) {
@@ -1042,6 +1083,14 @@ public final class VikaManager {
         MinecraftServer server = player.getServer();
         VikaWorldData.OwnerMeta meta = data(server).meta(player.getUUID());
         long away = meta.lastLogout <= 0 ? 0 : System.currentTimeMillis() - meta.lastLogout;
+        boolean firstSighting = meta.lastLogout <= 0 && data(server).byOwner(player.getUUID()).isEmpty();
+        // Natural spawn / revive: after the player has settled in the world.
+        schedule(server, 40, () -> {
+            if (player.hasDisconnected()) {
+                return;
+            }
+            tryNaturalSpawnOrRevive(player, firstSighting);
+        });
         schedule(server, 60, () -> {
             if (player.hasDisconnected() || !VikaConfig.greetOnJoin.get()) {
                 return;
@@ -1066,6 +1115,58 @@ public final class VikaManager {
             }
             laura.playEmote(Emote.WAVE);
         });
+    }
+
+    /**
+     * On login: revive a TIMER-waiting Vika next to the player, or naturally spawn the unique Vika
+     * when {@link VikaConfig#naturalSpawn} is on and the world has none yet.
+     */
+    private static void tryNaturalSpawnOrRevive(ServerPlayer player, boolean firstSighting) {
+        MinecraftServer server = player.getServer();
+        if (server == null) {
+            return;
+        }
+        VikaWorldData data = data(server);
+        // Finish a pending TIMER respawn immediately when the owner rejoins.
+        for (VikaWorldData.Record record : new ArrayList<>(data.byOwner(player.getUUID()))) {
+            if (record.respawnAt >= 0 && record.snapshot != null) {
+                if (!hasRoom(player, player.blockPosition())) {
+                    continue;
+                }
+                record.respawnAt = -1;
+                VikaEntity laura = create(player, record.snapshot, player.blockPosition());
+                if (laura != null) {
+                    VikaSpeech.say(laura, player, "respawned", LineFormatter.values());
+                }
+                data.setDirty();
+                return;
+            }
+        }
+        if (!VikaConfig.naturalSpawn.get()) {
+            return;
+        }
+        if (worldHasVika(server)) {
+            return;
+        }
+        // First join, or any join where the world somehow lost her: spawn once next to the player.
+        if (!firstSighting && !data.all().isEmpty()) {
+            return;
+        }
+        if (!hasRoom(player, player.blockPosition())) {
+            ViktoriaCore.LOGGER.info("Natural Vika spawn skipped: no safe spot near {}", player.getGameProfile().getName());
+            return;
+        }
+        ViktoriaCore.LOGGER.info("Natural spawn of unique Vika near {}", player.getGameProfile().getName());
+        VikaEntity laura = create(player, null, player.blockPosition());
+        if (laura == null) {
+            ViktoriaCore.LOGGER.warn("Natural Vika spawn failed for {}", player.getGameProfile().getName());
+            return;
+        }
+        data.meta(player.getUUID()).selected = laura.getUUID();
+        data.setDirty();
+        VikaSpeech.say(laura, player, "summon", LineFormatter.values());
+        com.l7cor1s.viktoria.api.VikaAPI.fire("summon", laura, player, "natural");
+        VikaAdvancements.award(player, "root");
     }
 
     public static void onPlayerLeave(ServerPlayer player) {

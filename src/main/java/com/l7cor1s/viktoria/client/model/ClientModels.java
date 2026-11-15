@@ -30,7 +30,7 @@ import java.util.Optional;
 
 /**
  * Custom Blockbench models on the client: from the server ({@code server:name#sha1}), from resource
- * packs ({@code assets/<namespace>/vika_models/}) or from the local {@code config/viktoria/models}
+ * packs ({@code assets/<namespace>/vika_models/}) or from the local {@code config/projectvika/models}
  * folder. Parsed once, textures registered once.
  *
  * @author vyrriox
@@ -109,10 +109,19 @@ public final class ClientModels {
         String name = ref.startsWith("pack:") ? ref.substring(5) : ref;
         Loaded loaded = null;
         // The name becomes a path in the models folder: only plain names, never "..", a drive or a root.
-        if (ServerAssetStore.isSafeName(name)) {
-            loaded = fromResourcePacks(name);
+        if (!ServerAssetStore.isSafeName(name)) {
+            ViktoriaCore.LOGGER.warn("Rejected model ref {}: unsafe name", ref);
+            CACHE.put(ref, Optional.empty());
+            return null;
+        }
+        loaded = fromResourcePacks(name);
+        if (loaded == null) {
+            Path folder = ViktoriaMod.configDir().resolve("models");
+            loaded = fromFolder(folder, name);
             if (loaded == null) {
-                loaded = fromFolder(ViktoriaMod.configDir().resolve("models"), name);
+                ViktoriaCore.LOGGER.warn(
+                        "Could not load model {}: not found in resource packs (assets/*/vika_models/{}.{{geo.json,animation.json,png,bbmodel}}) or in {}",
+                        ref, name, folder.toAbsolutePath());
             }
         }
         CACHE.put(ref, Optional.ofNullable(loaded));
@@ -219,6 +228,7 @@ public final class ClientModels {
 
     private static Loaded fromResourcePacks(String name) {
         var manager = Minecraft.getInstance().getResourceManager();
+        List<String> tried = new ArrayList<>();
         for (String namespace : manager.getNamespaces()) {
             Map<String, byte[]> files = new HashMap<>();
             for (String suffix : new String[]{".bbmodel", ".geo.json", ".animation.json", ".png"}) {
@@ -226,22 +236,28 @@ public final class ClientModels {
                 if (id == null) {
                     continue;
                 }
+                tried.add(id.toString());
                 Optional<Resource> resource = manager.getResource(id);
                 if (resource.isPresent()) {
                     try (InputStream in = resource.get().open()) {
                         files.put((name + suffix).toLowerCase(Locale.ROOT), in.readAllBytes());
-                    } catch (IOException ignored) {
-                        // Skip unreadable file.
+                    } catch (IOException e) {
+                        ViktoriaCore.LOGGER.warn("Could not read model asset {}: {}", id, e.getMessage());
                     }
                 }
             }
             if (!files.isEmpty()) {
                 try {
-                    return fromFiles(name, files);
+                    Loaded loaded = fromFiles(name, files);
+                    ViktoriaCore.LOGGER.info("Loaded pack model {} from namespace {} with files {}", name, namespace, files.keySet());
+                    return loaded;
                 } catch (IOException | RuntimeException e) {
                     ViktoriaCore.LOGGER.warn("Model {} from resource pack {} is invalid: {}", name, namespace, e.getMessage());
                 }
             }
+        }
+        if ("Vika".equals(name)) {
+            ViktoriaCore.LOGGER.warn("Embedded Vika model missing. Looked for: {}", tried);
         }
         return null;
     }
@@ -300,7 +316,7 @@ public final class ClientModels {
         if (textures.isEmpty()) {
             textures.add(ViktoriaMod.id("textures/entity/laura/laura.png"));
         }
-        ViktoriaCore.LOGGER.info("Loaded Laura model {} ({} bones, {} cubes, {} animations)", name, data.bones.size(), data.cubeCount(), data.animations.size());
+        ViktoriaCore.LOGGER.info("Loaded Vika model {} ({} bones, {} cubes, {} animations)", name, data.bones.size(), data.cubeCount(), data.animations.size());
         return new Loaded(data, textures);
     }
 

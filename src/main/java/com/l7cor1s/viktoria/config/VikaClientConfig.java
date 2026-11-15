@@ -3,7 +3,7 @@ package com.l7cor1s.viktoria.config;
 import com.l7cor1s.viktoria.ViktoriaMod;
 
 /**
- * Client-only settings, stored in {@code config/viktoria/viktoria-client.json}.
+ * Client-only settings, stored in {@code config/projectvika/viktoria-client.json}.
  *
  * @author vyrriox
  */
@@ -40,8 +40,8 @@ public final class VikaClientConfig {
     }
 
     private static ConfigFile build() {
-        ConfigFile f = new ConfigFile(ViktoriaMod.configDir().resolve("viktoria-client.json"),
-                "My Girlfriend Laura - client configuration (only affects your game).");
+        ConfigFile f = new ConfigFile(ViktoriaMod.configDir().resolve("projectvika-client.json"),
+                "Project Vika - client configuration (only affects your game).");
 
         ConfigFile.Section display = f.section("display", "What you see.");
         speechBubbles = display.bool("speechBubbles", true, "Show what Laura says in a bubble above her head.");

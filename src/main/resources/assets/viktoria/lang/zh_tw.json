@@ -215,9 +215,9 @@
   "viktoria.menu.style.skins": "外觀",
   "viktoria.menu.style.models": "模型",
   "viktoria.menu.skin.server_files": "伺服器外觀",
-  "viktoria.menu.skin.server_files.help": "伺服器 config/viktoria/skins 資料夾中的外觀",
+  "viktoria.menu.skin.server_files.help": "伺服器 config/projectvika/skins 資料夾中的外觀",
   "viktoria.menu.skin.local_files": "你的外觀",
-  "viktoria.menu.skin.local_files.help": "你的 config/viktoria/skins 資料夾中的 PNG 檔案。點擊其中一個即可傳送。",
+  "viktoria.menu.skin.local_files.help": "你的 config/projectvika/skins 資料夾中的 PNG 檔案。點擊其中一個即可傳送。",
   "viktoria.menu.skin.slim": "纖細手臂",
   "viktoria.menu.skin.reset": "預設外觀",
   "viktoria.menu.skin.url": "外觀網址（NameMC、Imgur 等）",
@@ -227,7 +227,7 @@
   "viktoria.menu.model.default": "預設模型",
   "viktoria.menu.model.folder": "開啟模型資料夾",
   "viktoria.menu.model.upload": "上傳 %s",
-  "viktoria.menu.model.hint": "將 .bbmodel 或 .geo.json 檔案放進伺服器的 config/viktoria/models，或把 .bbmodel 檔案拖曳到此視窗上。",
+  "viktoria.menu.model.hint": "將 .bbmodel 或 .geo.json 檔案放進伺服器的 config/projectvika/models，或把 .bbmodel 檔案拖曳到此視窗上。",
   "viktoria.menu.rename": "改名",
   "viktoria.menu.rename.hint": "她的名字",
   "viktoria.menu.config_folder": "設定資料夾",
@@ -456,7 +456,7 @@
   "viktoria.skin.reset": "已恢復她的預設外觀。",
   "viktoria.skin.not_allowed": "你沒有權限更改她的造型。",
   "viktoria.look.cooldown": "別這麼快：請等幾秒再更換她的外觀。",
-  "viktoria.network.server_missing": "此伺服器未安裝 My Girlfriend Laura。此模組需要伺服器與用戶端都安裝：請讓伺服器加入它，或將它從你的 mods 資料夾移除後再在此遊玩。",
+  "viktoria.network.server_missing": "此伺服器未安裝 Project Vika。此模組需要伺服器與用戶端都安裝：請讓伺服器加入它，或將它從你的 mods 資料夾移除後再在此遊玩。",
   "viktoria.skin.url_disabled": "此伺服器已停用透過網址設定外觀。",
   "viktoria.skin.url_refused": "不允許使用這個網站。允許的網站：%s",
   "viktoria.skin.file_missing": "伺服器上沒有名為 %s 的外觀。",
@@ -494,5 +494,5 @@
   "viktoria.release.confirm": "此操作無法復原：%s 將永遠離開並丟下她的物品。輸入 /laura release confirm 以繼續。",
   "viktoria.release.done": "%s 已永遠離開。",
   "viktoria.upload.quota": "你在伺服器上已有 %s 個此類檔案。請取代其中一個（檔名相同），或請管理員刪除一個。",
-  "viktoria.upload.bbmodel_only": "這裡只能傳送 .bbmodel 檔案（其中包含材質）。請把 .geo.json 模型放進伺服器的 config/viktoria/models 資料夾。"
+  "viktoria.upload.bbmodel_only": "這裡只能傳送 .bbmodel 檔案（其中包含材質）。請把 .geo.json 模型放進伺服器的 config/projectvika/models 資料夾。"
 }

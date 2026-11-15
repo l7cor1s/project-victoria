@@ -14,7 +14,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 
 /**
- * Laura's bag and equipment, drawn with the pastel theme of her menu.
+ * Vika's bag and equipment, drawn with the pastel theme of her menu.
  *
  * @author vyrriox
  */

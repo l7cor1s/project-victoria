@@ -14,7 +14,7 @@ import java.util.Map;
 
 /**
  * Animations of the default (player-like) model, from {@code assets/viktoria/animations/laura_humanoid.json}.
- * A file with the same name in {@code config/viktoria/animations/} replaces animations of the same
+ * A file with the same name in {@code config/projectvika/animations/} replaces animations of the same
  * name. Values follow the vanilla model part convention: degrees added to the part rotations and
  * pixels added to the part positions (Y points down).
  *

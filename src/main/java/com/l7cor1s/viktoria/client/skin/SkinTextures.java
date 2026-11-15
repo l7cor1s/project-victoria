@@ -30,7 +30,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Turns Laura's skin reference into a texture: built-in textures, downloaded URLs (validated and
+ * Turns Vika's skin reference into a texture: built-in textures, downloaded URLs (validated and
  * cached on disk) and files hosted by the server.
  *
  * @author vyrriox

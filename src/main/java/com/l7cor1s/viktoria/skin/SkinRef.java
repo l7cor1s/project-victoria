@@ -9,7 +9,7 @@ import java.util.Locale;
  * <ul>
  *     <li>{@code builtin:<name>}: a texture shipped with the mod</li>
  *     <li>{@code url:<address>}: downloaded by each client</li>
- *     <li>{@code server:<name>#<sha1>}: a file from the server's config/viktoria/skins folder</li>
+ *     <li>{@code server:<name>#<sha1>}: a file from the server's config/projectvika/skins folder</li>
  *     <li>{@code player:<name>}: waiting for the server to resolve a Minecraft account skin</li>
  * </ul>
  *

@@ -11,7 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import java.nio.file.Path;
 
 /**
- * My Girlfriend Laura: common entry point shared by every loader.
+ * Project Vika: common entry point shared by every loader.
  * <p>
  * Loader glue calls {@link #init(Platform)} as early as possible, then registers content through
  * {@link com.l7cor1s.viktoria.registry.VikaRegistries}.
@@ -40,7 +40,7 @@ public final class ViktoriaMod {
      * {@code /laura reload}. Item-based files are read here, after registries are frozen.
      */
     public static void reloadAll() {
-        reload("viktoria-common.json", VikaConfig::load);
+        reload("projectvika-common.json", VikaConfig::load);
         reload("gifts.json", GiftTable::load);
         reload("desires.json", com.l7cor1s.viktoria.desire.DesireTable::load);
         reload("recipes.json", com.l7cor1s.viktoria.cooking.Cookbook::load);
@@ -80,9 +80,9 @@ public final class ViktoriaMod {
         clientBridge = bridge == null ? ClientBridge.NOOP : bridge;
     }
 
-    /** Root of every file this mod reads or writes: {@code config/viktoria}. */
+    /** Root of every file this mod reads or writes: {@code config/projectvika}. */
     public static Path configDir() {
-        return platform().configDir().resolve(MODID);
+        return platform().configDir().resolve(ViktoriaCore.CONFIG_FOLDER);
     }
 
     public static ResourceLocation id(String path) {

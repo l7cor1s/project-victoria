@@ -56,7 +56,7 @@ import java.util.Locale;
 import java.util.function.Consumer;
 
 /**
- * Laura's menu: a pastel screen with tabs to see how she feels and to give her every order the
+ * Vika's menu: a pastel screen with tabs to see how she feels and to give her every order the
  * commands and the chat can give. Opened with the menu key (K by default) or by right clicking her.
  *
  * @author vyrriox

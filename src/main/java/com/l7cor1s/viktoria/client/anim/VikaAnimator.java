@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 /**
- * Chooses and blends Laura's animations: one looping "state" animation (idle, walk, sit, sad,
+ * Chooses and blends Vika's animations: one looping "state" animation (idle, walk, sit, sad,
  * gagged...) plus the current emote, with short cross fades. Works for the default model and for
  * custom Blockbench models alike: the caller supplies the animation set.
  *

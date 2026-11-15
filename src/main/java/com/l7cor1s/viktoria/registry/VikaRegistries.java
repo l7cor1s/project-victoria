@@ -79,7 +79,7 @@ public final class VikaRegistries {
         return new MenuType<>(VikaInventoryMenu::clientSide, FeatureFlags.DEFAULT_FLAGS);
     }
 
-    /** Laura's Heart: a rare item, 16 per stack. */
+    /** Vika's Heart: a rare item, 16 per stack. */
     public static Item.Properties heartProperties() {
         return new Item.Properties().stacksTo(16).rarity(Rarity.RARE);
     }

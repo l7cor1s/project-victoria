@@ -6,7 +6,7 @@ import com.l7cor1s.viktoria.entity.CombatMode;
 import java.util.List;
 
 /**
- * Server-side (and singleplayer) settings, stored in {@code config/viktoria/viktoria-common.json}.
+ * Server-side (and singleplayer) settings, stored in {@code config/projectvika/viktoria-common.json}.
  *
  * @author vyrriox
  */
@@ -56,10 +56,14 @@ public final class VikaConfig {
 
     // summoning
     public static ConfigFile.BoolValue chatSummon;
+    public static ConfigFile.BoolValue naturalSpawn;
     public static ConfigFile.IntValue summonPermissionLevel;
     public static ConfigFile.IntValue summonCooldownSeconds;
 
     // follow
+    public static ConfigFile.DoubleValue followRadius;
+    /** Prefer {@link #followRadius}; kept as the same config value. */
+    @Deprecated
     public static ConfigFile.DoubleValue followStartDistance;
     public static ConfigFile.DoubleValue followStopDistance;
     public static ConfigFile.DoubleValue teleportDistance;
@@ -206,34 +210,36 @@ public final class VikaConfig {
     }
 
     private static ConfigFile build() {
-        ConfigFile f = new ConfigFile(ViktoriaMod.configDir().resolve("viktoria-common.json"),
-                "My Girlfriend Laura - common and server configuration.",
-                "Reload in game with /laura reload (operators only).");
+        ConfigFile f = new ConfigFile(ViktoriaMod.configDir().resolve("projectvika-common.json"),
+                "Project Vika - common and server configuration.",
+                "Reload in game with /vika reload (operators only).");
 
         ConfigFile.Section general = f.section("general", "Core settings.");
         defaultName = general.string("defaultName", "Вика", "Name given to a newly summoned Vika. Players can rename her with /vika name or a name tag.");
         maxHealth = general.decimal("maxHealth", 100.0, 1.0, 100000.0, "Maximum health points. Version 1.x used 1000.");
         regenPerSecond = general.decimal("regenPerSecond", 0.0, 0.0, 10000.0, "Free health regenerated every second, without eating. 0 = she must eat to heal (see the needs section). Version 1.x used 20.");
-        invulnerable = general.bool("invulnerable", false, "If true, Laura never takes damage.");
+        invulnerable = general.bool("invulnerable", false, "If true, Vika never takes damage.");
         movementSpeed = general.decimal("movementSpeed", 0.4, 0.05, 1.5, "Base walking speed attribute (a player walks at about 0.1, a villager at 0.5).");
         attackDamage = general.decimal("attackDamage", 4.0, 0.0, 1000.0, "Base attack damage, before the weapon she holds.");
-        maxPerPlayer = general.integer("maxPerPlayer", 3, 1, 100, "How many companions one player can have. Each one is bound to the player who summoned her.");
-        maxPerWorld = general.integer("maxPerWorld", 0, 0, 10000, "Limit for the whole world or server. 0 = no limit. 1 = a single Laura for everybody, like version 1.x.");
-        extraNames = general.list("extraNames", List.of("Emma", "Chloe", "Lea", "Jade", "Lina", "Mia", "Zoe", "Luna", "Ines", "Rose"),
-                "Names given to your second, third... companion (the first one gets defaultName).");
-        reviveMode = general.enumeration("reviveMode", ReviveMode.GRAVE, "What happens when she dies. GRAVE: build a Laura's Gravestone and lay a flower on it to bring her back (default).\nTIMER: she comes back next to you after respawnDelaySeconds. NONE: she is gone for good and drops her things.\nWith GRAVE and TIMER she keeps her memories and her inventory.");
+        maxPerPlayer = general.integer("maxPerPlayer", 1, 1, 100, "How many companions one player can have. Project Vika defaults to 1 (unique companion).");
+        maxPerWorld = general.integer("maxPerWorld", 1, 0, 10000, "Limit for the whole world or server. 0 = no limit. Default 1 = a single Vika for everybody.");
+        extraNames = general.list("extraNames", List.of(),
+                "Unused while maxPerPlayer is 1. Kept for forks that raise the limit.");
+        reviveMode = general.enumeration("reviveMode", ReviveMode.TIMER, "What happens when she dies. TIMER: she comes back next to you after respawnDelaySeconds (default).\nGRAVE: build a Vika's Gravestone and lay a flower on it to bring her back.\nNONE: she is gone for good and drops her things.\nWith GRAVE and TIMER she keeps her memories and her inventory.");
         respawnDelaySeconds = general.integer("respawnDelaySeconds", 30, 0, 3600, "Delay before she comes back in TIMER mode.");
         reviveItems = general.list("reviveItems", List.of("#minecraft:small_flowers", "#minecraft:flowers"), "Items that can be laid on a gravestone to bring her back.");
         inventoryRows = general.integer("inventoryRows", 3, 1, 6, "Rows of 9 slots in her personal inventory.");
         dismissAffectionPenalty = general.integer("dismissAffectionPenalty", 20, 0, 1000, "Affection lost when she is dismissed (she comes back at the next summon).");
 
-        ConfigFile.Section summon = f.section("summoning", "How players get a Laura.");
+        ConfigFile.Section summon = f.section("summoning", "How players get Vika.");
         chatSummon = summon.bool("chatSummon", true, "Say \"I feel lonely\" (in any supported language) to summon her.");
-        summonPermissionLevel = summon.integer("summonPermissionLevel", 0, 0, 4, "Permission level required for /laura summon and the chat summon. 0 = everyone.");
+        naturalSpawn = summon.bool("naturalSpawn", true, "Spawn Vika near the player on first join if none exists yet. Off = only /vika summon and Vika's Heart.");
+        summonPermissionLevel = summon.integer("summonPermissionLevel", 0, 0, 4, "Permission level required for /vika summon and the chat summon. 0 = everyone.");
         summonCooldownSeconds = summon.integer("summonCooldownSeconds", 5, 0, 86400, "Cooldown between two summons for the same player.");
 
         ConfigFile.Section follow = f.section("follow", "Following her partner.");
-        followStartDistance = follow.decimal("startDistance", 7.0, 2.0, 64.0, "She starts walking to you when you are further than this (blocks).");
+        followRadius = follow.decimal("radius", 7.0, 2.0, 64.0, "Follow radius in blocks: she starts walking to you when you are farther than this.");
+        followStartDistance = followRadius;
         followStopDistance = follow.decimal("stopDistance", 3.5, 1.0, 32.0, "She stops when she is this close.");
         teleportDistance = follow.decimal("teleportDistance", 128.0, 8.0, 1024.0, "She only teleports next to you when she is further than this (blocks). Closer than that, she walks.");
         teleportWhenStuck = follow.bool("teleportWhenStuck", false, "Also teleport when she has been stuck for stuckSeconds, even closer than teleportDistance.\nWhen off, she only tells you she is stuck; calling her (\"come\") still brings her if no path exists.");
@@ -300,7 +306,7 @@ public final class VikaConfig {
         attackPlayers = combat.bool("attackPlayers", true, "She may fight other players, their companions and their pets, to defend her partner or herself.\nOnly where the server allows it: never when PvP is off, never against a teammate without friendly fire.\nfalse = she never fights a player or anything that belongs to a player.");
         shieldWithoutPvp = combat.bool("shieldWithoutPvp", true, "Where the server forbids fights between two players (PvP off, same team without friendly fire),\nthe other player, their companions and their pets cannot hurt her either. Creative mode players still can.");
 
-        ConfigFile.Section fetch = f.section("fetch", "Asking Laura to bring you things.");
+        ConfigFile.Section fetch = f.section("fetch", "Asking Vika to bring you things.");
         fetchEnabled = fetch.bool("enabled", true, "Enable the fetch action.");
         fetchRadius = fetch.integer("radius", 24, 4, 64, "Search radius around her, in blocks.");
         fetchFromContainers = fetch.bool("fromContainers", true, "She may take the item from nearby chests, barrels and other containers.");
@@ -331,17 +337,17 @@ public final class VikaConfig {
         gagAffectionPenalty = gag.integer("affectionPenalty", 15, 0, 1000, "Affection lost when gagged.");
 
         ConfigFile.Section dialogue = f.section("dialogue", "Chat and languages.");
-        chatRange = dialogue.integer("chatRange", 64, 4, 512, "Proximity chat: she only hears you, and you only hear her, within this distance in blocks and in the same dimension.\nCommands (/laura come, /laura where) and Laura's Heart still work from anywhere.");
+        chatRange = dialogue.integer("chatRange", 64, 4, 512, "Proximity chat: she only hears you, and you only hear her, within this distance in blocks and in the same dimension.\nCommands (/laura come, /laura where) and Vika's Heart still work from anywhere.");
         requireNameInChat = dialogue.bool("requireName", false, "If true, chat orders must contain her name (\"Laura, follow me\").");
         fallbackLanguage = dialogue.string("fallbackLanguage", "en_us", "Language used when a player's language has no dialogue file.");
         matchAllLanguages = dialogue.bool("matchAllLanguages", false, "If false she understands chat in each player's own language plus English (fewer false matches). If true, in every language she knows.");
         forcedLanguage = dialogue.string("forcedLanguage", "", "Force one dialogue language for everyone (for example fr_fr). Empty = each player's own language.");
-        customDialoguesReplace = dialogue.bool("customDialoguesReplace", false, "false: files in config/viktoria/dialogues add lines to the built-in ones. true: they replace them.");
+        customDialoguesReplace = dialogue.bool("customDialoguesReplace", false, "false: files in config/projectvika/dialogues add lines to the built-in ones. true: they replace them.");
         nameColor = dialogue.string("nameColor", "light_purple", "Color of her name in chat (a Minecraft color name or #RRGGBB).");
         speechBubbles = dialogue.bool("speechBubbles", true, "Show what she says in a bubble above her head.");
 
         ConfigFile.Section skins = f.section("skins", "Skins players can give her.");
-        defaultSkin = skins.string("defaultSkin", "builtin:laura", "Skin of a newly summoned Laura. builtin:<name>, server:<file name>, url:<link> or player:<name>.");
+        defaultSkin = skins.string("defaultSkin", "builtin:laura", "Skin of a newly summoned Vika. builtin:<name>, server:<file name>, url:<link> or player:<name>.");
         allowUrlSkins = skins.bool("allowUrlSkins", true, "Allow skins from an internet address.");
         urlDomainWhitelist = skins.list("urlDomainWhitelist", List.of("textures.minecraft.net", "i.imgur.com", "s.namemc.com", "namemc.com", "mc-heads.net", "minotar.net", "crafatar.com", "raw.githubusercontent.com", "cdn.discordapp.com", "media.discordapp.net"),
                 "Domains allowed for URL skins (sub-domains included). Put \"*\" to allow every domain.");
@@ -351,12 +357,12 @@ public final class VikaConfig {
         maxSkinUploadsPerPlayer = skins.integer("maxUploadsPerPlayer", 10, 1, 1000, "Skin files one player may keep on the server. Uploading a file with the same name replaces it.");
         othersCanChangeSkin = skins.bool("othersCanChangeSkin", false, "Allow players other than her partner to change her skin.");
 
-        ConfigFile.Section models = f.section("models", "Custom Blockbench models (.bbmodel or .geo.json) from config/viktoria/models.");
+        ConfigFile.Section models = f.section("models", "Custom Blockbench models (.bbmodel or .geo.json) from config/projectvika/models.");
         allowCustomModels = models.bool("allowCustomModels", true, "Allow custom models.");
         allowModelUploads = models.bool("allowUploads", false, "Allow players to upload their own model files to the server.");
         maxModelKb = models.integer("maxModelKb", 2048, 16, 16384, "Maximum size of a model file, in kilobytes.");
         maxModelUploadsPerPlayer = models.integer("maxUploadsPerPlayer", 3, 1, 1000, "Model files one player may keep on the server. Uploading a file with the same name replaces it.");
-        defaultModel = models.string("defaultModel", "pack:Vika", "Model of a newly summoned Laura. Empty = the player-like default model.");
+        defaultModel = models.string("defaultModel", "pack:Vika", "Informational only: newly summoned Vika always uses the embedded pack:Vika model. Extra models still load from config/projectvika/models.");
 
         ConfigFile.Section permissions = f.section("permissions", "Who can do what.");
         othersCanInteract = permissions.bool("othersCanInteract", false, "Allow other players to open her menu and give her orders.");

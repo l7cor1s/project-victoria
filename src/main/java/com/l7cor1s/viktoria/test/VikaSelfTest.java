@@ -37,7 +37,7 @@ public final class VikaSelfTest {
         if (!enabled()) {
             return;
         }
-        ViktoriaCore.LOGGER.info("[SELFTEST] Starting the Laura self test suite");
+        ViktoriaCore.LOGGER.info("[SELFTEST] Starting the Vika self test suite");
         runner = new TestRunner(server, VikaTests.all());
     }
 
