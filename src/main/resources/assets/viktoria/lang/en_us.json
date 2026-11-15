@@ -5,8 +5,8 @@
   "item.viktoria.laura_heart.tooltip": "Use it to call your companion, or to meet a new one.",
   "item.viktoria.laura_heart.recipe": "Made by cooking a pink tulip in a furnace.",
   "block.viktoria.laura_grave": "Vika's Gravestone",
-  "itemGroup.viktoria": "My Girlfriend Vika",
-  "key.categories.viktoria": "My Girlfriend Vika",
+  "itemGroup.viktoria": "Project Vika",
+  "key.categories.viktoria": "Project Vika",
   "key.viktoria.menu": "Open Vika's menu",
   "key.viktoria.emotes": "Emote wheel",
   "key.viktoria.call": "Call Vika",
@@ -448,7 +448,7 @@
   "viktoria.skin.reset": "Back to her default skin.",
   "viktoria.skin.not_allowed": "You are not allowed to change her look.",
   "viktoria.look.cooldown": "Not so fast: wait a few seconds before changing her look again.",
-  "viktoria.network.server_missing": "My Girlfriend Vika is not installed on this server. The mod is needed on both sides: ask the server to add it, or remove it from your mods folder to play here.",
+  "viktoria.network.server_missing": "Project Vika is not installed on this server. The mod is needed on both sides: ask the server to add it, or remove it from your mods folder to play here.",
   "viktoria.skin.url_disabled": "Skins from URLs are disabled on this server.",
   "viktoria.skin.url_refused": "This website is not allowed. Allowed: %s",
   "viktoria.skin.file_missing": "The server has no skin named %s.",
@@ -469,7 +469,7 @@
   "viktoria.upload.invalid_skin": "This is not a valid skin (PNG, 64x64 or 64x32).",
   "viktoria.upload.invalid_model": "This model could not be read: %s",
   "viktoria.upload.too_big": "This file is too big (max %s KB).",
-  "viktoria.help.title": "My Girlfriend Vika: main commands",
+  "viktoria.help.title": "Project Vika: main commands",
   "viktoria.help.summon": "/vika summon, or say \"I feel lonely\" in chat, or use Vika's Heart",
   "viktoria.help.orders": "/vika follow | stay | wander | come | stop | sleep | wakeup",
   "viktoria.help.home": "/vika home set | go | clear",
@@ -486,5 +486,6 @@
   "viktoria.release.done": "%s is gone for good.",
   "viktoria.upload.quota": "You already keep %s files of this kind on the server. Replace one of them (same file name) or ask an admin to remove one.",
   "viktoria.upload.bbmodel_only": "Only .bbmodel files can be sent from here (they hold their textures). Put .geo.json models in the server folder config/projectvika/models.",
-  "itemGroup.viktoria.laura": "Viktoria"
+  "itemGroup.viktoria.laura": "Project Vika",
+  "viktoria.menu.language.hint": "UI and dialogue follow your Minecraft language (English / Russian)."
 }

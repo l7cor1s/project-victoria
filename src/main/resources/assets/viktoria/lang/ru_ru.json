@@ -121,8 +121,8 @@
   "item.viktoria.laura_heart.tooltip": "Позови коллегу из офиса. Или заведи новую — на свой страх и риск.",
   "item.viktoria.laura_heart.recipe": "Сделай, запекая розовый тюльпан в печи. Да, серьёзно.",
   "block.viktoria.laura_grave": "Надгробие Вики",
-  "itemGroup.viktoria": "Моя девушка Вика",
-  "key.categories.viktoria": "Моя девушка Вика",
+  "itemGroup.viktoria": "Project Vika",
+  "key.categories.viktoria": "Project Vika",
   "key.viktoria.menu": "Открыть меню Вики",
   "key.viktoria.emotes": "Колесо эмоций",
   "key.viktoria.call": "Позвать Лауру",
@@ -448,7 +448,7 @@
   "viktoria.skin.reset": "Снова её обычный скин.",
   "viktoria.skin.not_allowed": "Тебе нельзя менять её образ.",
   "viktoria.look.cooldown": "Не так быстро: подожди несколько секунд, прежде чем снова менять её внешность.",
-  "viktoria.network.server_missing": "My Girlfriend Вика не установлен на этом сервере. Мод нужен на обеих сторонах: попроси сервер добавить его или убери его из своей папки mods, чтобы играть здесь.",
+  "viktoria.network.server_missing": "Project Vika не установлен на этом сервере. Мод нужен на обеих сторонах: попроси сервер добавить его или убери его из своей папки mods, чтобы играть здесь.",
   "viktoria.skin.url_disabled": "Скины по ссылкам отключены на этом сервере.",
   "viktoria.skin.url_refused": "Этот сайт не разрешён. Разрешены: %s",
   "viktoria.skin.file_missing": "На сервере нет скина с именем %s.",
@@ -469,7 +469,7 @@
   "viktoria.upload.invalid_skin": "Это не подходящий скин (нужен PNG, 64x64 или 64x32).",
   "viktoria.upload.invalid_model": "Не удалось прочитать эту модель: %s",
   "viktoria.upload.too_big": "Файл слишком большой (макс. %s КБ).",
-  "viktoria.help.title": "Моя девушка Вика: основные команды",
+  "viktoria.help.title": "Project Vika: основные команды",
   "viktoria.help.summon": "/vika summon, или напиши в чате «мне одиноко», или используй Сердце Вики",
   "viktoria.help.orders": "/vika follow | stay | wander | come | stop | sleep | wakeup",
   "viktoria.help.home": "/vika home set | go | clear",
@@ -511,5 +511,6 @@
   "lauramod.help.title": "Вика: основные команды",
   "lauramod.help.summon": "/vika summon, или напиши в чате «мне одиноко» / «вика ко мне», или используй Сердце Вики",
   "lauramod.network.server_missing": "Мод Вики (Laura) не установлен на этом сервере. Мод нужен на обеих сторонах: попроси сервер добавить его или убери его из своей папки mods, чтобы играть здесь.",
-  "itemGroup.viktoria.laura": "Виктория"
+  "itemGroup.viktoria.laura": "Project Vika",
+  "viktoria.menu.language.hint": "Интерфейс и реплики следуют языку Minecraft (английский / русский)."
 }
